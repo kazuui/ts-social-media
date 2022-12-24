@@ -28,7 +28,7 @@ class ApiError {
       return new ApiError(405, message)
     }
   
-    static internal(message: string) {
+    static internalError(message: string) {
       return new ApiError(500, message)
     }
   }
