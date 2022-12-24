@@ -1,0 +1,133 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model comment_likes {
+  id         BigInt   @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  user_id    String?  @db.Uuid
+  comment_id BigInt?
+  comments   Comment? @relation(fields: [comment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      User?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Comment {
+  id            BigInt          @id @default(autoincrement())
+  created_at    DateTime        @default(now()) @db.Timestamptz(6)
+  owner_id      String?         @db.Uuid
+  post_id       BigInt?
+  description   String?
+  likes_count   BigInt?         @default(0)
+  is_active     Boolean?
+  comment_likes comment_likes[]
+  users         User?           @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  posts         Post?           @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("comments")
+}
+
+model conversation_members {
+  id              BigInt         @id @default(autoincrement())
+  created_at      DateTime       @default(now()) @db.Timestamptz(6)
+  conversation_id BigInt?
+  user_id         String?        @db.Uuid
+  conversations   conversations? @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           User?          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model conversations {
+  id                   BigInt                 @id @default(autoincrement())
+  created_at           DateTime               @default(now()) @db.Timestamptz(6)
+  name                 String?                @db.VarChar
+  conversation_members conversation_members[]
+  messages             Message[]
+}
+
+model follows {
+  id                                    BigInt   @id @default(autoincrement())
+  created_at                            DateTime @default(now()) @db.Timestamptz(6)
+  user_id                               String?  @db.Uuid
+  followed_user_id                      String?  @db.Uuid
+  users_follows_followed_user_idTousers User?    @relation("follows_followed_user_idTousers", fields: [followed_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_follows_user_idTousers          User?    @relation("follows_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Message {
+  id              BigInt         @id @default(autoincrement())
+  created_at      DateTime       @default(now()) @db.Timestamptz(6)
+  user_id         String?        @db.Uuid
+  content         String?
+  conversation_id BigInt?
+  conversations   conversations? @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           User?          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("messages")
+}
+
+model Notification {
+  id                                   BigInt   @id @default(autoincrement())
+  created_at                           DateTime @default(now()) @db.Timestamptz(6)
+  user_id                              String?  @db.Uuid
+  sender_id                            String?  @db.Uuid
+  is_read                              Boolean? @default(false)
+  is_active                            Boolean? @default(true)
+  type                                 String?  @db.VarChar
+  content_id                           BigInt?
+  users_notifications_sender_idTousers User?    @relation("notifications_sender_idTousers", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_notifications_user_idTousers   User?    @relation("notifications_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("notifications")
+}
+
+model post_likes {
+  id         BigInt   @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  user_id    String?  @db.Uuid
+  post_id    BigInt?
+  posts      Post?    @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      User?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model Post {
+  id          BigInt       @id @default(autoincrement())
+  created_at  DateTime     @default(now()) @db.Timestamptz(6)
+  owner_id    String       @db.Uuid
+  description String?
+  photo       String?      @db.VarChar
+  likes_count BigInt?
+  is_active   Boolean?     @default(true)
+  comments    Comment[]
+  post_likes  post_likes[]
+  users       User         @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("posts")
+}
+
+model User {
+  id                                           String                 @id @unique @default(uuid()) @db.Uuid
+  created_at                                   DateTime               @default(now()) @db.Timestamptz(6)
+  email                                        String                 @unique @db.VarChar
+  password                                     String                 @db.VarChar
+  display_name                                 String?                @db.VarChar
+  profile_photo                                String?                @db.VarChar
+  role                                         String?                @db.VarChar
+  is_active                                    Boolean?               @default(true)
+  profile_summary                              String?
+  comment_likes                                comment_likes[]
+  comments                                     Comment[]
+  conversation_members                         conversation_members[]
+  follows_follows_followed_user_idTousers      follows[]              @relation("follows_followed_user_idTousers")
+  follows_follows_user_idTousers               follows[]              @relation("follows_user_idTousers")
+  messages                                     Message[]
+  notifications_notifications_sender_idTousers Notification[]         @relation("notifications_sender_idTousers")
+  notifications_notifications_user_idTousers   Notification[]         @relation("notifications_user_idTousers")
+  post_likes                                   post_likes[]
+  posts                                        Post[]
+
+  @@map("users")
+}
