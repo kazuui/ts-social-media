@@ -25,7 +25,7 @@ export const getAllPosts = async (
     res: Response,
     next: NextFunction
   ) => {
-    const postId = +req.params.id;
+    const postId = +req.params.postId;
     try {
       const post = await dbFetchPostById(postId);
       res.json({ data: post });
@@ -59,7 +59,7 @@ export const getAllPosts = async (
     next: NextFunction
   ) => {
     const userId = req.user.id as string;
-    const postId = +req.params.id;
+    const postId = +req.params.postId;
 
     try {
       const post = await dbLikePostById(postId, userId);
