@@ -1,64 +1,102 @@
 import { Request, Response, NextFunction } from "express";
-import {dbFetchAllUsers, dbFetchUserById, dbCreateUser, dbLogin} from "../services/userService"
+import {
+  dbFetchAllUsers,
+  dbFetchUserById,
+  dbCreateUser,
+  dbLogin,
+  dbEditUserProfile
+} from "../services/userService";
 import ApiError from "../types/apiError";
-import { Prisma, prisma, PrismaClient } from "@prisma/client";
 
-const DAY_IN_SECONDS = 24 * 60 * 60 * 1000
+const DAY_IN_SECONDS = 24 * 60 * 60 * 1000;
 
-export const getAllUsers =  async (req: Request, res: Response) => {
-    console.log(PrismaClient)
-    const users =   await dbFetchAllUsers();
-    res.status(200).json({data: users})
-}
+export const getAllUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const users = await dbFetchAllUsers();
+    res.status(200).json({ data: users });
+  } catch (e) {
+    next(e);
+  }
+};
 
+export const getUserById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const id = req.params.id;
+  try {
+    const user = await dbFetchUserById(id);
+    res.json({ data: user });
+  } catch (e) {
+    console.log(e);
+    next(e);
+    // res.json({message: "spomething webt wrong"})
+  }
+};
 
-export const getUserById =  async (req: Request, res: Response) => {
-    const id = req.params.id;
+export const signup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userData = req.body;
+  try {
+    const user = await dbCreateUser(userData);
+    res.json({ data: user });
+  } catch (e) {
+    console.log(e);
+    next(e);
+    // res.json({message: "spomething webt wrong"})
+  }
+};
+
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email, password } = req.body;
+  try {
+    if (!email || !password) throw ApiError.badRequest("Request data incomplete");
+
+    const { user, token } = await dbLogin(email, password);
+    if (!user) throw ApiError.notFound("User not found");
+
+    const cookieOptions = {
+      expires: new Date(Date.now() + DAY_IN_SECONDS),
+      httpOnly: true,
+      secure: false,
+    };
+
+    res.cookie("jwt", token, cookieOptions);
+
+    res.status(200).json({ user });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  res.clearCookie("jwt");
+  res.status(200).json({message: "Logout successful"});
+};
+
+export const editUserProfile = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
     try {
-        const user =   await dbFetchUserById(id);
-        res.json({data: user})
-    } catch (e) {
-        console.log(e)
-        res.json({message: "spomething webt wrong"})
-    }
-    
-}
+     
+        const updatedUser = await dbEditUserProfile(req.user, req.body)
+        res.status(200).json({user: updatedUser})
 
-
-export const createUser =  async (req: Request, res: Response) => {
-    const userData = req.body;
-    try {
-        const user =  await dbCreateUser(userData);
-        res.json({data: user})
-    } catch (e:any) {
-        console.log(e.message)
-        res.json({message: "spomething webt wrong"})
-    }
-    
-}
-
-
-
-export const logIn = async (req: Request, res: Response) => {
-    const { email, password } = req.body
-  
-    if (!email || !password) throw ApiError.badRequest('Request data incomplete')
-    try {
-        const {user, token} = await dbLogin(email, password)
-        if (!user) throw ApiError.notFound('User not found')
-      
-        res.cookie("jwt", token, {
-            expires: new Date(
-              Date.now() + DAY_IN_SECONDS
-            ),
-            httpOnly: true,
-            secure: false,
-          });
-        
-        res.status(200).json({ user })
     } catch(e) {
-        console.log(e)
+        next(e)
     }
   }
-
-

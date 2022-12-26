@@ -5,6 +5,7 @@ import cors from "cors";
 import errorHandler from "./middlewares/errorHandler";
 import dotenv from 'dotenv';
 import userRouter from "./routes/userRoutes";
+import postRouter from "./routes/postRoutes";
 
 const app = express();
 const server = http.createServer(app);
@@ -23,6 +24,7 @@ app.get("/", (req: Request, res: Response, next: NextFunction) => {
 
 //Routes and middlewares
 app.use("/users", userRouter);
+app.use("/posts", postRouter)
 app.use(errorHandler);
 app.use((req, res, next) => {
   const error = new Error("No route found");

@@ -9,20 +9,20 @@ datasource db {
 
 model comment_likes {
   id         BigInt    @id @default(autoincrement())
-  created_at DateTime @default(now()) @db.Timestamptz(6)
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
   user_id    String?   @db.Uuid
-  comment_id BigInt?
+  comment_id Int?
   comments   Comment? @relation(fields: [comment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users      User?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Comment {
-  id            BigInt          @id @default(autoincrement())
-  created_at    DateTime       @default(now()) @db.Timestamptz(6)
+  id            Int             @id @default(autoincrement())
+  created_at    DateTime?       @default(now()) @db.Timestamptz(6)
   owner_id      String?         @db.Uuid
-  post_id       BigInt?
+  post_id       Int?
   description   String?
-  likes_count   BigInt?         @default(0)
+  likes_count   Int?
   is_active     Boolean?
   comment_likes comment_likes[]
   users         User?          @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -31,25 +31,26 @@ model Comment {
 }
 
 model conversation_members {
-  id              BigInt         @id @default(autoincrement())
-  created_at      DateTime      @default(now()) @db.Timestamptz(6)
-  conversation_id BigInt?
+  id              Int            @id @default(autoincrement())
+  created_at      DateTime?      @default(now()) @db.Timestamptz(6)
+  conversation_id Int?
   user_id         String?        @db.Uuid
-  conversations   conversations? @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conversations   Conversation? @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users           User?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model conversations {
-  id                   BigInt                 @id @default(autoincrement())
-  created_at           DateTime              @default(now()) @db.Timestamptz(6)
+model Conversation {
+  id                   Int                    @id @default(autoincrement())
+  created_at           DateTime?              @default(now()) @db.Timestamptz(6)
   name                 String?                @db.VarChar
   conversation_members conversation_members[]
   messages             Message[]
+  @@map("conversations")
 }
 
 model follows {
-  id                                    BigInt    @id @default(autoincrement())
-  created_at                            DateTime @default(now()) @db.Timestamptz(6)
+  id                                    Int       @id @default(autoincrement())
+  created_at                            DateTime? @default(now()) @db.Timestamptz(6)
   user_id                               String?   @db.Uuid
   followed_user_id                      String?   @db.Uuid
   users_follows_followed_user_idTousers User?    @relation("follows_followed_user_idTousers", fields: [followed_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -57,19 +58,19 @@ model follows {
 }
 
 model Message {
-  id              BigInt         @id @default(autoincrement())
-  created_at      DateTime      @default(now()) @db.Timestamptz(6)
+  id              Int            @id @default(autoincrement())
+  created_at      DateTime?      @default(now()) @db.Timestamptz(6)
   user_id         String?        @db.Uuid
   content         String?
-  conversation_id BigInt?
-  conversations   conversations? @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  conversation_id Int?
+  conversations   Conversation? @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users           User?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   @@map("messages")
 }
 
 model Notification {
-  id                                   BigInt    @id @default(autoincrement())
-  created_at                           DateTime @default(now()) @db.Timestamptz(6)
+  id                                   Int       @id @default(autoincrement())
+  created_at                           DateTime? @default(now()) @db.Timestamptz(6)
   user_id                              String?   @db.Uuid
   sender_id                            String?   @db.Uuid
   is_read                              Boolean?  @default(false)
@@ -82,21 +83,21 @@ model Notification {
 }
 
 model post_likes {
-  id         BigInt    @id @default(autoincrement())
-  created_at DateTime @default(now()) @db.Timestamptz(6)
+  id         Int       @id @default(autoincrement())
+  created_at DateTime? @default(now()) @db.Timestamptz(6)
   user_id    String?   @db.Uuid
-  post_id    BigInt?
+  post_id    Int?
   posts      Post?    @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users      User?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Post {
-  id          BigInt       @id @default(autoincrement())
-  created_at  DateTime    @default(now()) @db.Timestamptz(6)
+  id          Int          @id @default(autoincrement())
+  created_at  DateTime?    @default(now()) @db.Timestamptz(6)
   owner_id    String       @db.Uuid
   description String?
   photo       String?      @db.VarChar
-  likes_count BigInt?
+  likes_count Int?
   is_active   Boolean?     @default(true)
   comments    Comment[]
   post_likes  post_likes[]
@@ -105,9 +106,9 @@ model Post {
 }
 
 model User {
-  id                                           String                 @id @unique @default(uuid()) @db.Uuid
-  created_at                                   DateTime              @default(now()) @db.Timestamptz(6)
-  email                                        String                @unique @db.VarChar
+  id                                           String                 @id @unique @db.Uuid
+  created_at                                   DateTime?              @default(now()) @db.Timestamptz(6)
+  email                                        String?                @unique @db.VarChar
   password                                     String?                @db.VarChar
   display_name                                 String?                @db.VarChar
   profile_photo                                String?                @db.VarChar

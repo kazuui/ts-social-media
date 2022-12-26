@@ -3,19 +3,19 @@ CREATE TABLE "comment_likes" (
     "id" BIGSERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "user_id" UUID,
-    "comment_id" BIGINT,
+    "comment_id" INTEGER,
 
     CONSTRAINT "comment_likes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "comments" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "owner_id" UUID,
-    "post_id" BIGINT,
+    "post_id" INTEGER,
     "description" TEXT,
-    "likes_count" BIGINT DEFAULT 0,
+    "likes_count" INTEGER,
     "is_active" BOOLEAN,
 
     CONSTRAINT "comments_pkey" PRIMARY KEY ("id")
@@ -23,9 +23,9 @@ CREATE TABLE "comments" (
 
 -- CreateTable
 CREATE TABLE "conversation_members" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
-    "conversation_id" BIGINT,
+    "conversation_id" INTEGER,
     "user_id" UUID,
 
     CONSTRAINT "conversation_members_pkey" PRIMARY KEY ("id")
@@ -33,7 +33,7 @@ CREATE TABLE "conversation_members" (
 
 -- CreateTable
 CREATE TABLE "conversations" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "name" VARCHAR,
 
@@ -42,7 +42,7 @@ CREATE TABLE "conversations" (
 
 -- CreateTable
 CREATE TABLE "follows" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "user_id" UUID,
     "followed_user_id" UUID,
@@ -52,18 +52,18 @@ CREATE TABLE "follows" (
 
 -- CreateTable
 CREATE TABLE "messages" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "user_id" UUID,
     "content" TEXT,
-    "conversation_id" BIGINT,
+    "conversation_id" INTEGER,
 
     CONSTRAINT "messages_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "notifications" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "user_id" UUID,
     "sender_id" UUID,
@@ -77,22 +77,22 @@ CREATE TABLE "notifications" (
 
 -- CreateTable
 CREATE TABLE "post_likes" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "user_id" UUID,
-    "post_id" BIGINT,
+    "post_id" INTEGER,
 
     CONSTRAINT "post_likes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "posts" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "owner_id" UUID NOT NULL,
     "description" TEXT,
     "photo" VARCHAR,
-    "likes_count" BIGINT,
+    "likes_count" INTEGER,
     "is_active" BOOLEAN DEFAULT true,
 
     CONSTRAINT "posts_pkey" PRIMARY KEY ("id")
@@ -100,7 +100,7 @@ CREATE TABLE "posts" (
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
+    "id" UUID NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "email" VARCHAR,
     "password" VARCHAR,

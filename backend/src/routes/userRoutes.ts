@@ -1,13 +1,22 @@
 import express from "express";
-import {getAllUsers, getUserById, createUser, logIn} from "../controllers/userController";
-import {validateLoggedIn} from "../middlewares/authHandler";
+import {getAllUsers, getUserById, editUserProfile, signup, login, logout} from "../controllers/userController";
+import {validateLoggedIn, validateAdmin} from "../middlewares/authHandler";
 
 const router = express.Router();
 
-router.get("/all", validateLoggedIn, getAllUsers);
-router.get("/:id", getUserById)
+router.route("/login").post(login)
+router.route("/signup").post(signup)
 
-router.route("/createUser").post(createUser)
-router.route("/login").post(logIn)
+//routes below require a user to be logged in
+router.use(validateLoggedIn)
+
+router.get("/all", getAllUsers);
+router.get("/:id", getUserById)
+router.route("/edit").patch(editUserProfile)
+
+router.route("/logout").post(logout)
+
+//routes below require a user to be an admin
+router.use(validateAdmin)
 
 export default router;
