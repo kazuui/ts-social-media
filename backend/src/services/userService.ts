@@ -60,7 +60,7 @@ export const dbEditUserProfile = async (
 
   if (user.email !== editData.email) {
     const isInvalidEmail = await checkEmailValid(editData.email as string);
-    if (isInvalidEmail) throw ApiError.badRequest("Email is invalid");
+    if (isInvalidEmail) throw ApiError.badRequest("Email is already in use");
   }
 
   const updatedUser = await prisma.user.update({

@@ -7,8 +7,7 @@ import {
   dbEditUserProfile
 } from "../services/userService";
 import ApiError from "../types/apiError";
-
-const DAY_IN_SECONDS = 24 * 60 * 60 * 1000;
+import { DAY_IN_SECONDS } from "../utils/constants";
 
 export const getAllUsers = async (
   req: Request,

@@ -1,5 +1,5 @@
 import express from "express";
-import {getAllComments,getCommentsByPostId,  createComment, likeCommentById} from "../controllers/commentController";
+import {getAllComments,getCommentsByPostId,  createComment, likeCommentById, unlikeCommentById} from "../controllers/commentController";
 import {validateLoggedIn, validateAdmin} from "../middlewares/authHandler";
 
 const router = express.Router();
@@ -11,6 +11,7 @@ router.get("/all", getAllComments);
 router.get("/post/:postId", getCommentsByPostId)
 router.post("/new/:postId", createComment)
 router.post("/:commentId/like", likeCommentById)
+router.post("/:commentId/unlike", unlikeCommentById)
 
 //routes below require a user to be an admin
 router.use(validateAdmin)

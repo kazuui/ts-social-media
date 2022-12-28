@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, Comment } from "@prisma/client";
+import { Prisma, PrismaClient, Comment, comment_likes } from "@prisma/client";
 import ApiError from "../types/apiError";
 
 const prisma = new PrismaClient();
@@ -15,9 +15,9 @@ export const dbFetchAllComments = async () => {
 export const dbFetchCommentsByPostId = async (id: number) => {
   const comments = await prisma.comment.findMany({
     where: {
-      posts : {
-        id
-      }
+      posts: {
+        id,
+      },
     },
     include: {
       _count: { select: { comment_likes: true } },
@@ -31,8 +31,8 @@ export const dbCreateComment = async (
   postId: number,
   userId: string
 ) => {
-    commentData.users = { connect: { id: userId } };
-    commentData.posts = { connect: { id: postId } };
+  commentData.users = { connect: { id: userId } };
+  commentData.posts = { connect: { id: postId } };
   const createdComment = await prisma.comment.create({ data: commentData });
 
   if (!createdComment) throw ApiError.badRequest("Bad request");
@@ -41,6 +41,9 @@ export const dbCreateComment = async (
 };
 
 export const dbLikeCommentById = async (commentId: number, userId: string) => {
+  const commentLikeRecord = await fetchCommentLikeRecord(commentId, userId);
+  if (commentLikeRecord) return;
+
   const likedComment = await prisma.comment_likes.create({
     data: {
       users: {
@@ -53,4 +56,31 @@ export const dbLikeCommentById = async (commentId: number, userId: string) => {
   });
   console.log(likedComment);
   return likedComment;
+};
+
+export const dbUnlikeCommentById = async (
+  commentId: number,
+  userId: string
+) => {
+  const commentLikeRecord = await fetchCommentLikeRecord(commentId, userId);
+  if (!commentLikeRecord) throw ApiError.badRequest("Bad request");
+
+  const unlikeComment = await prisma.comment_likes.delete({
+    where: {
+      id: commentLikeRecord.id,
+    },
+  });
+  return unlikeComment;
+};
+
+const fetchCommentLikeRecord = async (commentId: number, userId: string) => {
+  const commentLikeRecord: comment_likes | null =
+    await prisma.comment_likes.findFirstOrThrow({
+      where: {
+        user_id: userId,
+        comment_id: commentId,
+      },
+    });
+
+  return commentLikeRecord;
 };

@@ -3,7 +3,8 @@ import {
     dbCreatePost,
     dbFetchAllPosts,
     dbFetchPostById,
-    dbLikePostById
+    dbLikePostById,
+    dbUnlikePostById
 } from "../services/postService";
 import ApiError from "../types/apiError";
 
@@ -40,7 +41,7 @@ export const getAllPosts = async (
     res: Response,
     next: NextFunction
   ) => {
-    const userId = req.user.id as string
+    const userId = req.user.id 
     const postData = req.body;
 
     try {
@@ -58,7 +59,7 @@ export const getAllPosts = async (
     res: Response,
     next: NextFunction
   ) => {
-    const userId = req.user.id as string;
+    const userId = req.user.id
     const postId = +req.params.postId;
 
     try {
@@ -69,4 +70,22 @@ export const getAllPosts = async (
       next(e);
     }
   };
+
+  export const unlikePostById = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const userId = req.user.id
+    const postId = +req.params.postId;
+
+    try {
+      const post = await dbUnlikePostById(postId, userId);
+      res.json({ data: post });
+    } catch (e) {
+      console.log(e);
+      next(e);
+    }
+  };
+
 

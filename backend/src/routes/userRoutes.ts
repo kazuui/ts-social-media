@@ -12,7 +12,7 @@ router.use(validateLoggedIn)
 
 router.get("/all", getAllUsers);
 router.get("/:id", getUserById)
-router.route("/edit").patch(editUserProfile)
+router.route("/editprofile").patch(editUserProfile)
 
 router.route("/logout").post(logout)
 
