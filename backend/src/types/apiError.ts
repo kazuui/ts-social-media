@@ -27,6 +27,10 @@ class ApiError {
     static methodNotAllowed(message: string) {
       return new ApiError(405, message)
     }
+
+    static yupValidationError(message: string) {
+        return new ApiError(406, message)
+    }
   
     static internalError(message: string) {
       return new ApiError(500, message)

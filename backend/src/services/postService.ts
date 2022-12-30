@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient, post_likes } from "@prisma/client";
 import ApiError from "../types/apiError";
+import postSchema from "../models/postSchema";
 
 const prisma = new PrismaClient();
 
@@ -7,6 +8,13 @@ export const dbFetchAllPosts = async () => {
   const allPosts = await prisma.post.findMany({
     include: {
       _count: { select: { post_likes: true } },
+      users: {
+        select: {
+            id: true,
+            display_name: true,
+            profile_photo: true
+        }
+      }
     },
   });
   return allPosts;
@@ -19,6 +27,13 @@ export const dbFetchPostById = async (id: number) => {
     },
     include: {
       _count: { select: { post_likes: true } },
+      users: {
+        select: {
+            id: true,
+            display_name: true,
+            profile_photo: true
+        }
+      }
     },
   });
 
@@ -27,14 +42,20 @@ export const dbFetchPostById = async (id: number) => {
   return post;
 };
 
-export const dbCreatePost = async (postData: any, userId: string) => {
-  postData.users = { connect: { id: userId } };
+export const dbCreatePost = async (
+  postData: Prisma.PostCreateInput,
+  userId: string
+) => {
+  await checkValidData(postData);
 
-  const createdPost = await prisma.post
-    .create({ data: postData })
-    .catch((e) => {
-      throw ApiError.badRequest("Bad request");
-    });
+  const createdPost = await prisma.post.create({
+    data: {
+      description: postData.description,
+      photo: postData.photo,
+      users: { connect: { id: userId } },
+    },
+  });
+
   return createdPost;
 };
 
@@ -76,4 +97,12 @@ const fetchPostLikeRecord = async (postId: number, userId: string) => {
   });
 
   return postLikeRecord;
+};
+
+const checkValidData = async (postData: Prisma.PostCreateInput) => {
+  try {
+    await postSchema.validate(postData);
+  } catch (e: unknown) {
+    if (e instanceof Error) throw ApiError.yupValidationError(e.message);
+  }
 };
