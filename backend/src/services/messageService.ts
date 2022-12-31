@@ -24,9 +24,10 @@ export const dbCreateMessage = async (
   conversationId: number,
   userId: string
 ) => {
+    console.log(messageData.content)
     messageData.users = { connect: { id: userId } };
     messageData.conversations = { connect: { id: conversationId } };
-  const createdMessage = await prisma.comment.create({ data: messageData });
+  const createdMessage = await prisma.message.create({ data: messageData });
 
   if (!createdMessage) throw ApiError.badRequest("Bad request");
 

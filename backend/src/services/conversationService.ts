@@ -12,9 +12,6 @@ export const dbFetchConversationsByUserId = async (userId: string) => {
   const conversations = await prisma.conversation.findMany({
     include: {
       conversation_members: {
-        where: {
-          user_id: userId,
-        },
         include: {
           users: {
             select: {
@@ -90,40 +87,70 @@ export const dbCreateConversation = async (membersArr: string[]) => {
   return createdConversation;
 };
 
-export const dbEditConversationDetails = async (cconversationId: number, onversationDetails: string) => {};
-
-export const dbEditConversationMembers = async (conversationId: number, membersToEditArr: {
-  add: string[];
-  remove: string[];
-}) => {
-    const conversationMembers = await prisma.conversation_members.findMany({
+export const dbEditConversationDetails = async (
+  conversationId: number,
+  conversationDetails: string
+) => {
+    await dbFetchConversation(conversationId)
+    const conversation = await prisma.conversation.update({
         where: {
-          conversation_id: conversationId,
-          user_id: {
-            in: membersToEditArr.remove
-          }
-        }
-      });
-    
-      // Map update arrays into objects
-      const addMembers = (membersToEditArr.add || []).map((memberId) => ({
-        user_id: memberId
-      }));
-      const removeMembers = conversationMembers.map((member) => ({
-        id: member.id
-      }));
-    
-      // Update conversation members
-      await prisma.conversation.update({
-        where: {
-          id: conversationId
+            id: conversationId
         },
         data: {
-          conversation_members: {
-            create: addMembers,
-            delete: removeMembers
-          }
+            name: conversationDetails
         }
-      });
- 
+    })
+    return conversation;
+};
+
+export const dbEditConversationMembers = async (
+  conversationId: number,
+  membersToEditArr: {
+    add: string[];
+    remove: string[];
+  }
+) => {
+    //Find members' id for conversations to remove
+  const conversationMembers = await prisma.conversation_members.findMany({
+    where: {
+      conversation_id: conversationId,
+      user_id: {
+        in: membersToEditArr.remove,
+      },
+    },
+  });
+
+  // Map update arrays into objects
+  const addMembers = (membersToEditArr.add || []).map((memberId) => ({
+    user_id: memberId,
+  }));
+  const removeMembers = conversationMembers.map((member) => ({
+    id: member.id,
+  }));
+
+  // Update conversation members
+  await prisma.conversation.update({
+    where: {
+      id: conversationId,
+    },
+    data: {
+      conversation_members: {
+        create: addMembers,
+        delete: removeMembers,
+      },
+    },
+  });
+};
+
+const dbFetchConversation = async (conversationId: number) => {
+  const conversation = await prisma.conversation.findUnique({
+    where: {
+      id: conversationId,
+    },
+    include: {
+        conversation_members: true
+    }
+  });
+  if(!conversation) throw ApiError.badRequest("Invalid conversation id")
+  return conversation;
 };

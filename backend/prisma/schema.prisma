@@ -76,7 +76,7 @@ model Notification {
   is_read                              Boolean?  @default(false)
   is_active                            Boolean?  @default(true)
   type                                 String?   @db.VarChar
-  content_id                           BigInt?
+  content_id                           Int?
   users_notifications_sender_idTousers User?    @relation("notifications_sender_idTousers", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users_notifications_user_idTousers   User?    @relation("notifications_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   @@map("notifications")

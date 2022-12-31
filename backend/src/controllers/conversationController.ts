@@ -4,9 +4,14 @@ import {
   dbFetchAllConversations,
   dbFetchConversationsByUserId,
   dbEditConversationMembers,
-  dbEditConversationDetails
+  dbEditConversationDetails,
 } from "../services/conversationService";
 import ApiError from "../types/apiError";
+import conversationSchema from "../models/conversationSchema"
+
+interface ConversationParams {
+    id?: number
+}
 
 export const getAllConversations = async (
   req: Request,
@@ -26,8 +31,8 @@ export const getConversationsByUserId = async (
   res: Response,
   next: NextFunction
 ) => {
-  const userId = req.params.userId
-  
+  const userId = req.params.userId;
+
   try {
     const messages = await dbFetchConversationsByUserId(userId);
     res.json({ data: messages });
@@ -41,7 +46,7 @@ export const createConversation = async (
   res: Response,
   next: NextFunction
 ) => {
-  const membersArr = [...req.body.members, req.user.id]
+  const membersArr = [...req.body.members, req.user.id];
 
   try {
     const createdConversation = await dbCreateConversation(membersArr);
@@ -51,39 +56,55 @@ export const createConversation = async (
   }
 };
 
-
 export const editConversationMembers = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const membersToEditArr = req.body;
-    const conversationId = +req.params.conversationId
-    if(!Number.isInteger(conversationId)) throw ApiError.badRequest("Invalid request")
-  
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const membersToEditArr = req.body;
+  const conversationId = +req.params.conversationId;
+
+
+  try {
+    await validateRouteParams({id: conversationId})
+
+    const editedConversation = await dbEditConversationMembers(
+      conversationId,
+      membersToEditArr
+    );
+    res.json({ data: editedConversation });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const editConversationDetails = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { name } = req.body;
+  const conversationId = +req.params.conversationId;
+
+  try {
+    await validateRouteParams({id: conversationId})
+
+    const editedConversation = await dbEditConversationDetails(
+      conversationId,
+      name
+    );
+    res.json({ data: editedConversation });
+  } catch (e) {
+    next(e);
+  }
+};
+
+
+const validateRouteParams = async (paramsObj: ConversationParams) => {
     try {
-      const editedConversation = await dbEditConversationMembers(conversationId, membersToEditArr);
-      res.json({ data: editedConversation });
-    } catch (e) {
-      next(e);
+      await conversationSchema.validate(paramsObj);
+    } catch (e: unknown) {
+      if (e instanceof Error) throw ApiError.badRequest("Invalid request");
     }
   };
-
-  export const editConversationDetails = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const conversationDetails = req.body;
-    const conversationId = +req.params.conversationId
-    if(!Number.isInteger(conversationId)) throw ApiError.badRequest("Invalid request")
   
-    try {
-      const editedConversation = await dbEditConversationDetails(conversationId, conversationDetails);
-      res.json({ data: editedConversation });
-    } catch (e) {
-      next(e);
-    }
-  };
-
-

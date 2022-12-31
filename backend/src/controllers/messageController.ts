@@ -19,6 +19,7 @@ export const getAllMessages = async (
   }
 };
 
+//not in use
 export const getMessagesByConversationId = async (
   req: Request,
   res: Response,
@@ -44,6 +45,7 @@ export const createMessage = async (
   const messageData = req.body;
 
   try {
+    console.log("yes")
     const createdMessage = await dbCreateMessage(messageData, conversationId, userId);
     res.json({ data: createdMessage });
   } catch (e) {

@@ -7,6 +7,12 @@ import {
   dbUnlikeCommentById
 } from "../services/commentService";
 import ApiError from "../types/apiError";
+import commentSchema from "../models/commentSchema"
+
+interface CommentParams {
+    id?: number,
+    post_id?: number
+}
 
 export const getAllComments = async (
   req: Request,
@@ -28,10 +34,10 @@ export const getCommentsByPostId = async (
 ) => {
   const postId = +req.params.postId;
   try {
+    await validateRouteParams({ post_id: postId })
     const comments = await dbFetchCommentsByPostId(postId);
     res.json({ data: comments });
   } catch (e) {
-    console.log(e);
     next(e);
   }
 };
@@ -46,10 +52,10 @@ export const createComment = async (
   const commentData = req.body;
 
   try {
+    await validateRouteParams({ post_id: postId })
     const createdComment = await dbCreateComment(commentData, postId, userId);
     res.json({ data: createdComment });
   } catch (e) {
-    console.log(e);
     next(e);
   }
 };
@@ -64,10 +70,10 @@ export const likeCommentById = async (
   const commentId = +req.params.commentId;
 
   try {
+    await validateRouteParams({id: commentId})
     const comment = await dbLikeCommentById(commentId, userId);
     res.json({ data: comment });
   } catch (e) {
-    console.log(e);
     next(e);
   }
 };
@@ -81,11 +87,20 @@ export const unlikeCommentById = async (
     const commentId = +req.params.commentId;
 
     try {
+        await validateRouteParams({id: commentId})
       const comment = await dbUnlikeCommentById(commentId, userId);
       res.json({ data: comment });
     } catch (e) {
-      console.log(e);
       next(e);
     }
   };
 
+
+  const validateRouteParams = async (paramsObj: CommentParams) => {
+    try {
+      await commentSchema.validate(paramsObj);
+    } catch (e: unknown) {
+      if (e instanceof Error) throw ApiError.badRequest("Invalid request");
+    }
+  };
+  
