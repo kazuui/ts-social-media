@@ -8,12 +8,12 @@ datasource db {
 }
 
 model comment_likes {
-  id         Int    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   created_at DateTime? @default(now()) @db.Timestamptz(6)
   user_id    String?   @db.Uuid
   comment_id Int?
-  comments   Comment? @relation(fields: [comment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users      User?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  comments   Comment?  @relation(fields: [comment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      User?     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Comment {
@@ -24,17 +24,19 @@ model Comment {
   description   String?
   likes_count   Int?
   is_active     Boolean?
+  updated_at    DateTime?       @default(now()) @db.Timestamptz(6)
   comment_likes comment_likes[]
-  users         User?          @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  posts         Post?          @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users         User?           @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  posts         Post?           @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
   @@map("comments")
 }
 
 model conversation_members {
-  id              Int            @id @default(autoincrement())
-  created_at      DateTime?      @default(now()) @db.Timestamptz(6)
+  id              Int           @id @default(autoincrement())
+  created_at      DateTime?     @default(now()) @db.Timestamptz(6)
   conversation_id Int?
-  user_id         String?        @db.Uuid
+  user_id         String?       @db.Uuid
   conversations   Conversation? @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users           User?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
@@ -43,8 +45,10 @@ model Conversation {
   id                   Int                    @id @default(autoincrement())
   created_at           DateTime?              @default(now()) @db.Timestamptz(6)
   name                 String?                @db.VarChar
+  updated_at           DateTime?              @default(now()) @db.Timestamptz(6)
   conversation_members conversation_members[]
   messages             Message[]
+
   @@map("conversations")
 }
 
@@ -53,18 +57,20 @@ model follows {
   created_at                            DateTime? @default(now()) @db.Timestamptz(6)
   user_id                               String?   @db.Uuid
   followed_user_id                      String?   @db.Uuid
-  users_follows_followed_user_idTousers User?    @relation("follows_followed_user_idTousers", fields: [followed_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users_follows_user_idTousers          User?    @relation("follows_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_follows_followed_user_idTousers User?     @relation("follows_followed_user_idTousers", fields: [followed_user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_follows_user_idTousers          User?     @relation("follows_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Message {
-  id              Int            @id @default(autoincrement())
-  created_at      DateTime?      @default(now()) @db.Timestamptz(6)
-  user_id         String?        @db.Uuid
+  id              Int           @id @default(autoincrement())
+  created_at      DateTime?     @default(now()) @db.Timestamptz(6)
+  user_id         String?       @db.Uuid
   content         String?
   conversation_id Int?
+  updated_at      DateTime?     @default(now()) @db.Timestamptz(6)
   conversations   Conversation? @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users           User?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
   @@map("messages")
 }
 
@@ -77,8 +83,10 @@ model Notification {
   is_active                            Boolean?  @default(true)
   type                                 String?   @db.VarChar
   content_id                           Int?
-  users_notifications_sender_idTousers User?    @relation("notifications_sender_idTousers", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users_notifications_user_idTousers   User?    @relation("notifications_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  updated_at                           DateTime? @default(now()) @db.Timestamptz(6)
+  users_notifications_sender_idTousers User?     @relation("notifications_sender_idTousers", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_notifications_user_idTousers   User?     @relation("notifications_user_idTousers", fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
   @@map("notifications")
 }
 
@@ -87,8 +95,8 @@ model post_likes {
   created_at DateTime? @default(now()) @db.Timestamptz(6)
   user_id    String?   @db.Uuid
   post_id    Int?
-  posts      Post?    @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users      User?    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  posts      Post?     @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      User?     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Post {
@@ -99,9 +107,11 @@ model Post {
   photo       String?      @db.VarChar
   likes_count Int?
   is_active   Boolean?     @default(true)
+  updated_at  DateTime?    @default(now()) @db.Timestamptz(6)
   comments    Comment[]
   post_likes  post_likes[]
-  users       User        @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users       User         @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
   @@map("posts")
 }
 
@@ -115,15 +125,17 @@ model User {
   role                                         String?                @db.VarChar
   is_active                                    Boolean?               @default(true)
   profile_summary                              String?
+  updated_at                                   DateTime?              @default(now()) @db.Timestamptz(6)
   comment_likes                                comment_likes[]
   comments                                     Comment[]
   conversation_members                         conversation_members[]
   follows_follows_followed_user_idTousers      follows[]              @relation("follows_followed_user_idTousers")
   follows_follows_user_idTousers               follows[]              @relation("follows_user_idTousers")
   messages                                     Message[]
-  notifications_notifications_sender_idTousers Notification[]        @relation("notifications_sender_idTousers")
-  notifications_notifications_user_idTousers   Notification[]        @relation("notifications_user_idTousers")
+  notifications_notifications_sender_idTousers Notification[]         @relation("notifications_sender_idTousers")
+  notifications_notifications_user_idTousers   Notification[]         @relation("notifications_user_idTousers")
   post_likes                                   post_likes[]
   posts                                        Post[]
+
   @@map("users")
 }

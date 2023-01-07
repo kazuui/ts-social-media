@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "comment_likes" (
-    "id" BIGSERIAL NOT NULL,
+    "id" SERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "user_id" UUID,
     "comment_id" INTEGER,
@@ -17,6 +17,7 @@ CREATE TABLE "comments" (
     "description" TEXT,
     "likes_count" INTEGER,
     "is_active" BOOLEAN,
+    "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "comments_pkey" PRIMARY KEY ("id")
 );
@@ -36,6 +37,7 @@ CREATE TABLE "conversations" (
     "id" SERIAL NOT NULL,
     "created_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
     "name" VARCHAR,
+    "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "conversations_pkey" PRIMARY KEY ("id")
 );
@@ -57,6 +59,7 @@ CREATE TABLE "messages" (
     "user_id" UUID,
     "content" TEXT,
     "conversation_id" INTEGER,
+    "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "messages_pkey" PRIMARY KEY ("id")
 );
@@ -70,7 +73,8 @@ CREATE TABLE "notifications" (
     "is_read" BOOLEAN DEFAULT false,
     "is_active" BOOLEAN DEFAULT true,
     "type" VARCHAR,
-    "content_id" BIGINT,
+    "content_id" INTEGER,
+    "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
 );
@@ -94,6 +98,7 @@ CREATE TABLE "posts" (
     "photo" VARCHAR,
     "likes_count" INTEGER,
     "is_active" BOOLEAN DEFAULT true,
+    "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "posts_pkey" PRIMARY KEY ("id")
 );
@@ -109,6 +114,7 @@ CREATE TABLE "users" (
     "role" VARCHAR,
     "is_active" BOOLEAN DEFAULT true,
     "profile_summary" TEXT,
+    "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );

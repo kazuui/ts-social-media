@@ -1,5 +1,5 @@
 import express from "express";
-import {getAllConversations,getConversationsByUserId,  createConversation, editConversationMembers, editConversationDetails} from "../controllers/conversationController";
+import {getAllConversations,getUserConversations,  createConversation, editConversationMembers, editConversationDetails} from "../controllers/conversationController";
 import {validateLoggedIn, validateAdmin} from "../middlewares/authHandler";
 
 const router = express.Router();
@@ -8,8 +8,8 @@ const router = express.Router();
 router.use(validateLoggedIn)
 
 router.get("/all", getAllConversations);
-router.get("/:userId", getConversationsByUserId)
 router.post("/new", createConversation)
+router.get("/:userId", getUserConversations)
 router.patch("/:conversationId/edit/members", editConversationMembers)
 router.patch("/:conversationId/edit", editConversationDetails)
 

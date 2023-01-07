@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import ApiError from "../types/apiError";
 import jwt from "jsonwebtoken";
-import { dbFetchUserById } from "../services/userService";
+import { dbFetchUser } from "../services/userService";
 import { Prisma, PrismaClient, User } from "@prisma/client";
 
 
@@ -33,7 +33,7 @@ export const validateLoggedIn = async (
     ) as jwtToken;
 
     // 3) Check if user still exists
-    const currentUser = await dbFetchUserById(decodedToken.id);
+    const currentUser = await dbFetchUser(decodedToken.id);
     if (!currentUser)
       throw ApiError.forbidden(
         "The user belonging to this token does no longer exist"

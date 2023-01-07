@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import {
     dbCreateNotification,
   dbFetchAllNotifications,
-  dbFetchNotificationsByUserId,
+  dbFetchUserNotifications,
   dbReadNotifications,
 } from "../services/notificationService";
 import ApiError from "../types/apiError";
@@ -20,7 +20,7 @@ export const getAllNotifications = async (
   }
 };
 
-export const getNotificationsByUserId = async (
+export const getUserNotifications = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -28,7 +28,7 @@ export const getNotificationsByUserId = async (
   const userId = req.params.userId;
 
   try {
-    const notifications = await dbFetchNotificationsByUserId(userId);
+    const notifications = await dbFetchUserNotifications(userId);
     res.json({ data: notifications });
   } catch (e) {
     next(e);

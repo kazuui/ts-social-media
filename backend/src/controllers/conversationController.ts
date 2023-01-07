@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import {
   dbCreateConversation,
   dbFetchAllConversations,
-  dbFetchConversationsByUserId,
+  dbFetchUserConversations,
   dbEditConversationMembers,
   dbEditConversationDetails,
 } from "../services/conversationService";
@@ -26,7 +26,7 @@ export const getAllConversations = async (
   }
 };
 
-export const getConversationsByUserId = async (
+export const getUserConversations = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -34,7 +34,7 @@ export const getConversationsByUserId = async (
   const userId = req.params.userId;
 
   try {
-    const messages = await dbFetchConversationsByUserId(userId);
+    const messages = await dbFetchUserConversations(userId);
     res.json({ data: messages });
   } catch (e) {
     next(e);

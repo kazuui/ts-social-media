@@ -1,7 +1,8 @@
-import { Prisma, PrismaClient, post_likes } from "@prisma/client";
+import { Prisma, PrismaClient, post_likes, Post } from "@prisma/client";
 import ApiError from "../types/apiError";
 import postSchema from "../models/postSchema";
 import { dbFetchFollowingId } from "./userService";
+import { networkInterfaces } from "os";
 
 const prisma = new PrismaClient();
 
@@ -11,17 +12,17 @@ export const dbFetchAllPosts = async () => {
       _count: { select: { post_likes: true } },
       users: {
         select: {
-            id: true,
-            display_name: true,
-            profile_photo: true
-        }
-      }
+          id: true,
+          display_name: true,
+          profile_photo: true,
+        },
+      },
     },
   });
   return allPosts;
 };
 
-export const dbFetchPostById = async (id: number) => {
+export const dbFetchPost = async (id: number) => {
   const post = await prisma.post.findUniqueOrThrow({
     where: {
       id,
@@ -30,11 +31,11 @@ export const dbFetchPostById = async (id: number) => {
       _count: { select: { post_likes: true } },
       users: {
         select: {
-            id: true,
-            display_name: true,
-            profile_photo: true
-        }
-      }
+          id: true,
+          display_name: true,
+          profile_photo: true,
+        },
+      },
     },
   });
 
@@ -60,7 +61,7 @@ export const dbCreatePost = async (
   return createdPost;
 };
 
-export const dbLikePostById = async (postId: number, userId: string) => {
+export const dbLikePost = async (postId: number, userId: string) => {
   const postLikeRecord = await fetchPostLikeRecord(postId, userId);
   if (postLikeRecord) return;
 
@@ -77,7 +78,7 @@ export const dbLikePostById = async (postId: number, userId: string) => {
   return likePost;
 };
 
-export const dbUnlikePostById = async (postId: number, userId: string) => {
+export const dbUnlikePost = async (postId: number, userId: string) => {
   const postLikeRecord = await fetchPostLikeRecord(postId, userId);
   if (!postLikeRecord) throw ApiError.badRequest("Bad request");
 
@@ -87,6 +88,46 @@ export const dbUnlikePostById = async (postId: number, userId: string) => {
     },
   });
   return unlikePost;
+};
+
+export const dbEditPost = async (
+  postId: number,
+  userId: string,
+  postData: Prisma.PostCreateInput
+) => {
+  await checkValidData(postData);
+  const post = await dbFetchPost(postId);
+  if (!post || post.owner_id !== userId)
+    throw ApiError.badRequest("Invalid request");
+
+  const updatedPost = await prisma.post.update({
+    where: {
+      id: postId,
+    },
+    data: {
+      description: postData.description,
+      photo: postData.photo,
+      updated_at: new Date()
+    },
+  });
+  return updatedPost;
+};
+
+export const dbDisablePost = async (postId: number, userId: string) => {
+  const post = await dbFetchPost(postId);
+  if (!post || post.owner_id !== userId)
+    throw ApiError.badRequest("Invalid request");
+
+  const updatedPost = await prisma.post.update({
+    where: {
+      id: postId,
+    },
+    data: {
+      is_active: false,
+      updated_at: new Date()
+    },
+  });
+  return updatedPost;
 };
 
 const fetchPostLikeRecord = async (postId: number, userId: string) => {
@@ -109,66 +150,99 @@ const checkValidData = async (postData: Prisma.PostCreateInput) => {
 };
 
 interface PostFeedData {
-    initialFeed: boolean,
-    take: number,
-    // skip: number,
-    cursor?: number
+  initialFeed: boolean;
+  take: number;
+  cursor?: number;
 }
 
-export const dbFetchInitialPostsFeed = async (postFeedData: PostFeedData, userId: string) => {
-    const followingId  = await dbFetchFollowingId(userId)
-    if(!followingId) return {posts: []}
-    
-    console.log(followingId)
-    const initialPostsFeed = await prisma.post.findMany({
-        where: {
-            owner_id: {
-                in: [...followingId.follows_follows_user_idTousers.map((user) => user.followed_user_id as string), userId] 
-            }
+export const dbFetchInitialPostsFeed = async (
+  postFeedData: PostFeedData,
+  userId: string
+) => {
+  const followingId = await dbFetchFollowingId(userId);
+  if (!followingId) return { posts: [] };
+
+  const initialPostsFeed = await prisma.post.findMany({
+    where: {
+      owner_id: {
+        in: [
+          ...followingId.follows_follows_user_idTousers.map(
+            (user) => user.followed_user_id as string
+          ),
+          userId,
+        ],
+      },
+    },
+    take: postFeedData.take,
+    orderBy: {
+      created_at: "desc",
+    },
+    include: {
+        _count: { select: { post_likes: true } },
+        users: {
+          select: {
+            id: true,
+            display_name: true,
+            profile_photo: true,
+          },
         },
-        take: postFeedData.take,
-        orderBy: {
-            created_at: "desc"
-        }
-    })
-    if(!initialPostsFeed.length) return {posts: []}
+      }
+  });
+  if (!initialPostsFeed.length) return { posts: [] };
 
-    const cursor = initialPostsFeed[initialPostsFeed.length - 1].id
-    return {
-        posts: initialPostsFeed,
-        cursor
-    }
-}
+  const cursor = initialPostsFeed[initialPostsFeed.length - 1].id;
+  return {
+    posts: initialPostsFeed,
+    cursor,
+  };
+};
 
-export const dbFetchNextPostsFeed = async (postFeedData: PostFeedData, userId: string) => {
-    const cursorPost = await dbFetchPostById(postFeedData.cursor as number)
-    if (!cursorPost) throw ApiError.notFound("Post not found");
-    console.log(cursorPost)
+export const dbFetchNextPostsFeed = async (
+  postFeedData: PostFeedData,
+  userId: string
+) => {
+  const cursorPost = await dbFetchPost(postFeedData.cursor as number);
+  if (!cursorPost) throw ApiError.notFound("Post not found");
 
-    const followingId  = await dbFetchFollowingId(userId)
-    if(!followingId) return {posts: []}
+  const followingId = await dbFetchFollowingId(userId);
+  if (!followingId) return { posts: [] };
 
-    const nextPostsFeed = await prisma.post.findMany({
-        where: {
-            owner_id: {
-                in: [...followingId.follows_follows_user_idTousers.map((user) => user.followed_user_id as string), userId] 
-            }
+  const nextPostsFeed = await prisma.post.findMany({
+    where: {
+      owner_id: {
+        in: [
+          ...followingId.follows_follows_user_idTousers.map(
+            (user) => user.followed_user_id as string
+          ),
+          userId,
+        ],
+      },
+    },
+    take: postFeedData.take,
+    skip: 1,
+    cursor: {
+      id: cursorPost.id,
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+    include: {
+        _count: { select: { post_likes: true } },
+        users: {
+          select: {
+            id: true,
+            display_name: true,
+            profile_photo: true,
+          },
         },
-        take: postFeedData.take,
-        skip: 1,
-        cursor: {
-            id: cursorPost.id
-        },
-        orderBy: {
-            created_at: "desc"
-        }
-    })
-    if(!nextPostsFeed.length) return {posts: []}
+      }
+  });
+  if (!nextPostsFeed.length) return { posts: [] };
 
-    const cursor = nextPostsFeed[nextPostsFeed.length - 1].id
+  const cursor = nextPostsFeed[nextPostsFeed.length - 1].id;
 
-    return {
-        posts: nextPostsFeed,
-        cursor
-    }
-}
+  return {
+    posts: nextPostsFeed,
+    cursor,
+  };
+};

@@ -4,6 +4,7 @@ import * as yup from 'yup';
 const notificationSchema = yup.object({
     id: yup.number().positive().integer(),
     created_at: yup.date(),
+    updated_at: yup.date(),
     user_id: yup.string().uuid(),
     sender_id: yup.string().uuid(),
     is_read: yup.bool(),

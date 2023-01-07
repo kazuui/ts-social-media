@@ -13,9 +13,7 @@ export const dbFetchAllUsers = async () => {
 };
 
 export const dbFetchAllFollows = async () => {
-  console.log('hi')
   const allFollows = await prisma.follows.findMany();
-  console.log(allFollows)
   return allFollows;
 };
 
@@ -40,7 +38,7 @@ export const dbFetchCurrentUserFollows = async (userId: string) => {
 
 
 
-export const dbFetchUserById = async (id: string) => {
+export const dbFetchUser = async (id: string) => {
   const user = await prisma.user.findUnique({
     where: {
       id,
@@ -110,6 +108,7 @@ export const dbEditUserProfile = async (
       profile_photo: editData.profile_photo,
       profile_summary: editData.profile_summary,
       display_name: editData.display_name,
+      updated_at: new Date()
     },
   });
   return updatedUser;

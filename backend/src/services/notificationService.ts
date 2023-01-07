@@ -8,7 +8,7 @@ export const dbFetchAllNotifications = async () => {
   return notifications;
 };
 
-export const dbFetchNotificationsByUserId = async (userId: string) => {
+export const dbFetchUserNotifications = async (userId: string) => {
     const notifications = await prisma.notification.findMany({
         where: {
             user_id: userId,
@@ -44,7 +44,8 @@ export const dbReadNotifications = async (notificationIdArr: number[], userId: s
             }
         },
         data: {
-            is_read: true
+            is_read: true,
+            updated_at: new Date()
         }
     })
     return updateNotifications

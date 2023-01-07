@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import {
   dbFetchAllUsers,
-  dbFetchUserById,
+  dbFetchUser,
   dbCreateUser,
   dbLogin,
   dbEditUserProfile,
@@ -26,14 +26,14 @@ export const getAllUsers = async (
   }
 };
 
-export const getUserById = async (
+export const getUser = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const id = req.params.id;
   try {
-    const user = await dbFetchUserById(id);
+    const user = await dbFetchUser(id);
     res.json({ data: user });
   } catch (e) {
     next(e);

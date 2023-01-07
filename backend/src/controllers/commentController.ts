@@ -2,16 +2,18 @@ import { Request, Response, NextFunction } from "express";
 import {
   dbCreateComment,
   dbFetchAllComments,
-  dbFetchCommentsByPostId,
-  dbLikeCommentById,
-  dbUnlikeCommentById
+  dbFetchPostComments,
+  dbLikeComment,
+  dbUnlikeComment,
+  dbEditComment,
+  dbDeleteComment
 } from "../services/commentService";
 import ApiError from "../types/apiError";
-import commentSchema from "../models/commentSchema"
+import commentSchema from "../models/commentSchema";
 
 interface CommentParams {
-    id?: number,
-    post_id?: number
+  id?: number;
+  post_id?: number;
 }
 
 export const getAllComments = async (
@@ -27,15 +29,15 @@ export const getAllComments = async (
   }
 };
 
-export const getCommentsByPostId = async (
+export const getPostComments = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   const postId = +req.params.postId;
   try {
-    await validateRouteParams({ post_id: postId })
-    const comments = await dbFetchCommentsByPostId(postId);
+    await validateRouteParams({ post_id: postId });
+    const comments = await dbFetchPostComments(postId);
     res.json({ data: comments });
   } catch (e) {
     next(e);
@@ -52,7 +54,7 @@ export const createComment = async (
   const commentData = req.body;
 
   try {
-    await validateRouteParams({ post_id: postId })
+    await validateRouteParams({ post_id: postId });
     const createdComment = await dbCreateComment(commentData, postId, userId);
     res.json({ data: createdComment });
   } catch (e) {
@@ -60,8 +62,44 @@ export const createComment = async (
   }
 };
 
+export const editComment = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const userId = req.user.id;
+    const commentId = +req.params.commentId;
+    const commentData = req.body;
+  
+    try {
+      await validateRouteParams({ id: commentId });
+      const createdComment = await dbEditComment(commentId, userId, commentData);
+      res.json({ data: createdComment });
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  export const deleteComment = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const userId = req.user.id;
+    const commentId = +req.params.commentId;
+  
+    try {
+      await validateRouteParams({ id: commentId });
+      const deletedComment = await dbDeleteComment(commentId, userId);
+      res.json({ data: deletedComment });
+    } catch (e) {
+      next(e);
+    }
+  };
+  
+
 //need to validate if comment already liked by same user
-export const likeCommentById = async (
+export const likeComment = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -70,37 +108,35 @@ export const likeCommentById = async (
   const commentId = +req.params.commentId;
 
   try {
-    await validateRouteParams({id: commentId})
-    const comment = await dbLikeCommentById(commentId, userId);
+    await validateRouteParams({ id: commentId });
+    const comment = await dbLikeComment(commentId, userId);
     res.json({ data: comment });
   } catch (e) {
     next(e);
   }
 };
 
-export const unlikeCommentById = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const userId = req.user.id
-    const commentId = +req.params.commentId;
+export const unlikeComment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.user.id;
+  const commentId = +req.params.commentId;
 
-    try {
-        await validateRouteParams({id: commentId})
-      const comment = await dbUnlikeCommentById(commentId, userId);
-      res.json({ data: comment });
-    } catch (e) {
-      next(e);
-    }
-  };
+  try {
+    await validateRouteParams({ id: commentId });
+    const comment = await dbUnlikeComment(commentId, userId);
+    res.json({ data: comment });
+  } catch (e) {
+    next(e);
+  }
+};
 
-
-  const validateRouteParams = async (paramsObj: CommentParams) => {
-    try {
-      await commentSchema.validate(paramsObj);
-    } catch (e: unknown) {
-      if (e instanceof Error) throw ApiError.badRequest("Invalid request");
-    }
-  };
-  
+const validateRouteParams = async (paramsObj: CommentParams) => {
+  try {
+    await commentSchema.validate(paramsObj);
+  } catch (e: unknown) {
+    if (e instanceof Error) throw ApiError.badRequest("Invalid request");
+  }
+};

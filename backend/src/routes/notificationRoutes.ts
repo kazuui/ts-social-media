@@ -1,7 +1,7 @@
 import express from "express";
 import {
   getAllNotifications,
-  getNotificationsByUserId,
+  getUserNotifications,
   createNotification,
   readNotifications
 } from "../controllers/notificationController";
@@ -13,7 +13,7 @@ const router = express.Router();
 router.use(validateLoggedIn);
 
 router.get("/all", getAllNotifications);
-router.get("/user", getNotificationsByUserId);
+router.get("/user", getUserNotifications);
 router.post("/new", createNotification);
 router.patch("/read", readNotifications);
 

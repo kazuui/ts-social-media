@@ -2,11 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import {
   dbCreatePost,
   dbFetchAllPosts,
-  dbFetchPostById,
-  dbLikePostById,
-  dbUnlikePostById,
+  dbFetchPost,
+  dbLikePost,
+  dbUnlikePost,
   dbFetchInitialPostsFeed,
-  dbFetchNextPostsFeed
+  dbFetchNextPostsFeed,
+  dbEditPost,
+  dbDisablePost,
 } from "../services/postService";
 import postSchema from "../models/postSchema";
 import ApiError from "../types/apiError";
@@ -28,7 +30,7 @@ export const getAllPosts = async (
   }
 };
 
-export const getPostById = async (
+export const getPost = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -37,7 +39,7 @@ export const getPostById = async (
 
   try {
     await validateRouteParams({ id: postId });
-    const post = await dbFetchPostById(postId);
+    const post = await dbFetchPost(postId);
     res.json({ data: post });
   } catch (e) {
     next(e);
@@ -60,7 +62,7 @@ export const createPost = async (
   }
 };
 
-export const likePostById = async (
+export const likePost = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -71,14 +73,14 @@ export const likePostById = async (
   try {
     await validateRouteParams({ id: postId });
 
-    const post = await dbLikePostById(postId, userId);
+    const post = await dbLikePost(postId, userId);
     res.json({ data: post });
   } catch (e) {
     next(e);
   }
 };
 
-export const unlikePostById = async (
+export const unlikePost = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -88,7 +90,7 @@ export const unlikePostById = async (
 
   try {
     await validateRouteParams({ id: postId });
-    const post = await dbUnlikePostById(postId, userId);
+    const post = await dbUnlikePost(postId, userId);
     res.json({ data: post });
   } catch (e) {
     next(e);
@@ -104,22 +106,57 @@ const validateRouteParams = async (paramsObj: PostParams) => {
 };
 
 export const getPostFeed = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const postFeedData = req.body;
-    const userId = req.user.id
-    console.log(postFeedData)
-    try {
-        if(postFeedData.initialFeed) {
-            const posts = await dbFetchInitialPostsFeed(postFeedData, userId)
-            res.json({ data: posts });
-        } else {
-            const posts = await dbFetchNextPostsFeed(postFeedData, userId)
-            res.json({ data: posts });
-        }
-    } catch (e) {
-      next(e);
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const postFeedData = req.body;
+  const userId = req.user.id;
+
+  try {
+    if (postFeedData.initialFeed) {
+      const posts = await dbFetchInitialPostsFeed(postFeedData, userId);
+      res.json({ data: posts });
+    } else {
+      const posts = await dbFetchNextPostsFeed(postFeedData, userId);
+      res.json({ data: posts });
     }
-  };
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const editPost = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const postId = +req.params.postId;
+  const postData = req.body;
+  const userId = req.user.id;
+
+  try {
+    await validateRouteParams({ id: postId });
+    const post = await dbEditPost(postId, userId, postData);
+    res.json({ data: post });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const deletePost = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const postId = +req.params.postId;
+  const userId = req.user.id;
+
+  try {
+    await validateRouteParams({ id: postId });
+    const post = await dbDisablePost(postId, userId);
+    res.json({ data: post });
+  } catch (e) {
+    next(e);
+  }
+};

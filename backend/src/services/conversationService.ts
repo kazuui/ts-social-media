@@ -8,7 +8,7 @@ export const dbFetchAllConversations = async () => {
   return allConversations;
 };
 
-export const dbFetchConversationsByUserId = async (userId: string) => {
+export const dbFetchUserConversations = async (userId: string) => {
   const conversations = await prisma.conversation.findMany({
     include: {
       conversation_members: {
@@ -97,7 +97,8 @@ export const dbEditConversationDetails = async (
             id: conversationId
         },
         data: {
-            name: conversationDetails
+            name: conversationDetails,
+            updated_at: new Date()
         }
     })
     return conversation;
@@ -138,6 +139,7 @@ export const dbEditConversationMembers = async (
         create: addMembers,
         delete: removeMembers,
       },
+      updated_at: new Date()
     },
   });
 };

@@ -4,6 +4,7 @@ import * as yup from 'yup';
 const userSchema= yup.object({
     id: yup.string().uuid(),
     created_at: yup.date(),
+    updated_at: yup.date(),
     email: yup.string().email().nullable(),
     is_active: yup.boolean(),
     display_name: yup.string().max(100),
