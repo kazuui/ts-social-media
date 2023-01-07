@@ -1,6 +1,7 @@
 import { Prisma, PrismaClient, post_likes } from "@prisma/client";
 import ApiError from "../types/apiError";
 import postSchema from "../models/postSchema";
+import { dbFetchFollowingId } from "./userService";
 
 const prisma = new PrismaClient();
 
@@ -106,3 +107,68 @@ const checkValidData = async (postData: Prisma.PostCreateInput) => {
     if (e instanceof Error) throw ApiError.yupValidationError(e.message);
   }
 };
+
+interface PostFeedData {
+    initialFeed: boolean,
+    take: number,
+    // skip: number,
+    cursor?: number
+}
+
+export const dbFetchInitialPostsFeed = async (postFeedData: PostFeedData, userId: string) => {
+    const followingId  = await dbFetchFollowingId(userId)
+    if(!followingId) return {posts: []}
+    
+    console.log(followingId)
+    const initialPostsFeed = await prisma.post.findMany({
+        where: {
+            owner_id: {
+                in: [...followingId.follows_follows_user_idTousers.map((user) => user.followed_user_id as string), userId] 
+            }
+        },
+        take: postFeedData.take,
+        orderBy: {
+            created_at: "desc"
+        }
+    })
+    if(!initialPostsFeed.length) return {posts: []}
+
+    const cursor = initialPostsFeed[initialPostsFeed.length - 1].id
+    return {
+        posts: initialPostsFeed,
+        cursor
+    }
+}
+
+export const dbFetchNextPostsFeed = async (postFeedData: PostFeedData, userId: string) => {
+    const cursorPost = await dbFetchPostById(postFeedData.cursor as number)
+    if (!cursorPost) throw ApiError.notFound("Post not found");
+    console.log(cursorPost)
+
+    const followingId  = await dbFetchFollowingId(userId)
+    if(!followingId) return {posts: []}
+
+    const nextPostsFeed = await prisma.post.findMany({
+        where: {
+            owner_id: {
+                in: [...followingId.follows_follows_user_idTousers.map((user) => user.followed_user_id as string), userId] 
+            }
+        },
+        take: postFeedData.take,
+        skip: 1,
+        cursor: {
+            id: cursorPost.id
+        },
+        orderBy: {
+            created_at: "desc"
+        }
+    })
+    if(!nextPostsFeed.length) return {posts: []}
+
+    const cursor = nextPostsFeed[nextPostsFeed.length - 1].id
+
+    return {
+        posts: nextPostsFeed,
+        cursor
+    }
+}

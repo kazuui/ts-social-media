@@ -1,10 +1,9 @@
-import { Prisma, PrismaClient, User } from "@prisma/client";
+import { follows, Prisma, PrismaClient, User } from "@prisma/client";
 import ApiError from "../types/apiError";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { SECRET_KEY, JWT_EXPIRES_IN } from "../utils/constants";
 import userSchema from "../models/userSchema";
-import { randomUUID } from "crypto";
 
 const prisma = new PrismaClient();
 
@@ -12,6 +11,34 @@ export const dbFetchAllUsers = async () => {
   const allUsers = await prisma.user.findMany();
   return allUsers;
 };
+
+export const dbFetchAllFollows = async () => {
+  console.log('hi')
+  const allFollows = await prisma.follows.findMany();
+  console.log(allFollows)
+  return allFollows;
+};
+
+export const dbFetchCurrentUserFollows = async (userId: string) => {
+
+  const following = await prisma.follows.findMany({
+    where: {
+      user_id: userId
+    }
+  });
+  const followers = await prisma.follows.findMany({
+    where: {
+      followed_user_id: userId
+    }
+  })
+
+  return {
+    followers,
+    following
+  };
+};
+
+
 
 export const dbFetchUserById = async (id: string) => {
   const user = await prisma.user.findUnique({
@@ -87,6 +114,50 @@ export const dbEditUserProfile = async (
   });
   return updatedUser;
 };
+
+export const dbFetchFollowingId = async (userId: string) => {
+  const followingId = await prisma.user.findFirst({
+    where: { id: userId },
+    select: { follows_follows_user_idTousers: { select: { followed_user_id: true } } },
+  })
+  return followingId
+}
+
+export const dbFollowUser = async (userId: string, currentUserId: string) => {
+  const followRecord = await fetchFollowRecord(userId, currentUserId);
+  if (followRecord) return;
+  const followUser = await prisma.follows.create({
+    data: {
+      user_id: currentUserId,
+      followed_user_id: userId
+    }
+  })
+  return followUser
+}
+
+export const dbUnfollowUser = async (userId: string, currentUserId: string) => {
+  const followRecord = await fetchFollowRecord(userId, currentUserId);
+  if (!followRecord) throw ApiError.badRequest("Bad request");
+
+  const unfollowUser = await prisma.follows.delete({
+    where: {
+      id: followRecord.id
+    },
+  });
+  return unfollowUser;
+}
+
+const fetchFollowRecord = async (userId: string, currentUserId: string) => {
+  const followRecord: follows | null = await prisma.follows.findFirst({
+    where: {
+      user_id: currentUserId,
+      followed_user_id: userId,
+    },
+  });
+
+  return followRecord;
+};
+
 
 const dbFetchUserByEmail = async (email: string) => {
   const user = await prisma.user.findUnique({

@@ -1,5 +1,5 @@
 import express from "express";
-import {getAllPosts, getPostById, createPost, likePostById, unlikePostById } from "../controllers/postController";
+import {getAllPosts, getPostById, createPost, likePostById, unlikePostById, getPostFeed } from "../controllers/postController";
 import {validateLoggedIn, validateAdmin} from "../middlewares/authHandler";
 
 const router = express.Router();
@@ -8,8 +8,11 @@ const router = express.Router();
 router.use(validateLoggedIn)
 
 router.get("/all", getAllPosts);
-router.get("/:postId", getPostById)
+router.post("/feed", getPostFeed)
 router.post("/createPost", createPost)
+
+
+router.get("/:postId", getPostById)
 router.post("/:postId/like", likePostById)
 router.post("/:postId/unlike", unlikePostById)
 

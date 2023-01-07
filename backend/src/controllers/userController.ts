@@ -4,7 +4,11 @@ import {
   dbFetchUserById,
   dbCreateUser,
   dbLogin,
-  dbEditUserProfile
+  dbEditUserProfile,
+  dbFollowUser,
+  dbUnfollowUser,
+  dbFetchAllFollows,
+  dbFetchCurrentUserFollows
 } from "../services/userService";
 import ApiError from "../types/apiError";
 import { DAY_IN_SECONDS } from "../utils/constants";
@@ -32,7 +36,6 @@ export const getUserById = async (
     const user = await dbFetchUserById(id);
     res.json({ data: user });
   } catch (e) {
-    console.log(e);
     next(e);
     // res.json({message: "spomething webt wrong"})
   }
@@ -50,7 +53,6 @@ export const signup = async (
   } catch (e) {
     console.log(e);
     next(e);
-    // res.json({message: "spomething webt wrong"})
   }
 };
 
@@ -99,3 +101,61 @@ export const editUserProfile = async (
         next(e)
     }
   }
+
+  export const followUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const id = req.params.id;
+    const currentUserId = req.user.id
+    try {
+      const user = await dbFollowUser(id, currentUserId);
+      res.json({ data: user });
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  export const unfollowUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const id = req.params.id;
+    const currentUserId = req.user.id
+    try {
+      const user = await dbUnfollowUser(id, currentUserId);
+      res.json({ data: user });
+    } catch (e) {
+      next(e);
+    }
+  };
+
+export const getAllFollows = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const follows = await dbFetchAllFollows();
+      res.status(200).json({ data: follows });
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  export const getFollows = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const userId = req.user.id;
+    try {
+      const follows = await dbFetchCurrentUserFollows(userId);
+      res.status(200).json({ data: follows });
+    } catch (e) {
+        console.log(e)
+      next(e);
+    }
+  };

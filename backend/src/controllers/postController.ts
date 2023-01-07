@@ -5,6 +5,8 @@ import {
   dbFetchPostById,
   dbLikePostById,
   dbUnlikePostById,
+  dbFetchInitialPostsFeed,
+  dbFetchNextPostsFeed
 } from "../services/postService";
 import postSchema from "../models/postSchema";
 import ApiError from "../types/apiError";
@@ -100,3 +102,24 @@ const validateRouteParams = async (paramsObj: PostParams) => {
     if (e instanceof Error) throw ApiError.badRequest("Invalid request");
   }
 };
+
+export const getPostFeed = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const postFeedData = req.body;
+    const userId = req.user.id
+    console.log(postFeedData)
+    try {
+        if(postFeedData.initialFeed) {
+            const posts = await dbFetchInitialPostsFeed(postFeedData, userId)
+            res.json({ data: posts });
+        } else {
+            const posts = await dbFetchNextPostsFeed(postFeedData, userId)
+            res.json({ data: posts });
+        }
+    } catch (e) {
+      next(e);
+    }
+  };
