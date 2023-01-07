@@ -2,10 +2,10 @@ import React from 'react';
 
 //Components
 
-function Error404() {
+function PageNotFound() {
   return (
     <p>This is Error404 page</p>
   );
 }
 
-export default Error404;
+export default PageNotFound;

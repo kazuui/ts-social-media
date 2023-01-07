@@ -9,9 +9,172 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #F3F5F7;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Page */
+.page {
+  margin-top: 20px;
+  padding: 0 20px;
+}
+
+/* NavBar */
+
+.nav-brand {
+  float: left;
+}
+
+.nav-brand a {
+  display: block;
+  color: 41444E;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.navbar>ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #FFFFFF;
+}
+
+.nav-item {
+  float: left;
+  /* border-right: 1px solid #bbb; */
+}
+
+/* .nav-item:last-child {
+  border-right: none;
+} */
+
+.nav-item a {
+  display: block;
+  color: #41444E;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.nav-item a:hover {
+  background-color: #E7E7E7;
+}
+
+/* .active {
+  background-color: #04AA6D;
+} */
+
+/* Panels */
+.panel-container {
+  display: flex;
+  justify-content: center;
+}
+
+.main-panel {
+  /* background-color: gray; */
+  width: 50%;
+  min-width: 260px;
+  border-radius: 10px;
+  /* padding: 12px; */
+}
+
+.side-panel {
+  /* background-color: gray; */
+  width: 20%;
+  min-width: 260px;
+  border-radius: 10px;
+  /* padding: 12px; */
+}
+
+.side-panel-left {
+  margin-right: 16px;
+}
+
+.side-panel-right {
+  margin-left: 16px;
+}
+
+/* Post Item */
+.post-item {
+  background-color: #FFFFFF;
+  padding: 16px;
+  border-radius: 5px;
+  align-items: center;
+}
+
+.post-user-info {
+  /* margin-left: 10px; */
+  /* display: flex; */
+  /* margin-bottom: 16px; */
+  background-color: #41444E;
+}
+
+.post-user-profile-img {
+  float: left;
+  background-color: black;
+  width: 45px;
+  height: 45px;
+  margin-right: 10px;
+  border-radius: 50px;
+}
+
+.post-user-text {
+  float: left;
+}
+
+.post-user-name {
+  font-weight: bold;
+}
+
+.post-user-location {
+  font-size: 12px;
+}
+
+.post-edit {
+  float: right;
+}
+
+.post-content {
+  clear: both;
+  padding-top: 16px;
+  /* background-color: #41444E; */
+}
+
+.post-interactions {
+  display: flex;
+  margin-top: 16px;
+}
+
+.post-likes {
+  margin-top: 12px;
+}
+
+.post-comment-summary {
+  margin-top: 12px;
+}
+
+/* Responsiveness */
+/* Mobile */
+.test {
+  padding: 14px;
+}
+
+/* Tablet */
+@media (min-width:600px) {
+  .test {
+    padding: 20px;
+  }
+}
+
+/* Desktop */
+@media (min-width:900px) {
+  .test {
+    padding: 24px;
+  }
 }
