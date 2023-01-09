@@ -2,7 +2,12 @@ import React from 'react';
 
 //Components
 
+
 function Home() {
+
+  // temporary only
+  var showImage = true;
+
   return (
     <div className='page'>
       <div className='panel-container'>
@@ -19,14 +24,16 @@ function Home() {
               </div>
               <div className='post-user-text'>
                 <p className='post-user-name'>qwerty123</p>
-                <p className='post-user-location'>Location</p>
+                <p className='post-user-location'>8/1/2023 12:40PM (Edited)</p>
               </div>
               <div className='post-edit'>
-                <p>icon</p>
+                <p>settings</p>
               </div>
             </div>
             <div className='post-content'>
               <p>Post Content</p>
+            </div>
+            <div className='post-image'>
             </div>
             <div className='post-interactions'>
               <p>Like</p>
