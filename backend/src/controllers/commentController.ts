@@ -6,7 +6,9 @@ import {
   dbLikeComment,
   dbUnlikeComment,
   dbEditComment,
-  dbDeleteComment
+  dbDeleteComment,
+  dbFetchPostInitialComments,
+  dbFetchPostNextComments,
 } from "../services/commentService";
 import ApiError from "../types/apiError";
 import commentSchema from "../models/commentSchema";
@@ -63,40 +65,39 @@ export const createComment = async (
 };
 
 export const editComment = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const userId = req.user.id;
-    const commentId = +req.params.commentId;
-    const commentData = req.body;
-  
-    try {
-      await validateRouteParams({ id: commentId });
-      const createdComment = await dbEditComment(commentId, userId, commentData);
-      res.json({ data: createdComment });
-    } catch (e) {
-      next(e);
-    }
-  };
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.user.id;
+  const commentId = +req.params.commentId;
+  const commentData = req.body;
 
-  export const deleteComment = async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const userId = req.user.id;
-    const commentId = +req.params.commentId;
-  
-    try {
-      await validateRouteParams({ id: commentId });
-      const deletedComment = await dbDeleteComment(commentId, userId);
-      res.json({ data: deletedComment });
-    } catch (e) {
-      next(e);
-    }
-  };
-  
+  try {
+    await validateRouteParams({ id: commentId });
+    const createdComment = await dbEditComment(commentId, userId, commentData);
+    res.json({ data: createdComment });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const deleteComment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.user.id;
+  const commentId = +req.params.commentId;
+
+  try {
+    await validateRouteParams({ id: commentId });
+    const deletedComment = await dbDeleteComment(commentId, userId);
+    res.json({ data: deletedComment });
+  } catch (e) {
+    next(e);
+  }
+};
 
 //need to validate if comment already liked by same user
 export const likeComment = async (
@@ -128,6 +129,28 @@ export const unlikeComment = async (
     await validateRouteParams({ id: commentId });
     const comment = await dbUnlikeComment(commentId, userId);
     res.json({ data: comment });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const getPostPaginatedComments = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const postId = +req.params.postId;
+  const paginatedData = req.body;
+
+  try {
+    await validateRouteParams({ post_id: postId });
+    if (paginatedData.initialFeed) {
+      const comments = await dbFetchPostInitialComments(paginatedData, postId);
+      res.json({ data: comments });
+    } else {
+      const comments = await dbFetchPostNextComments(paginatedData, postId);
+      res.json({ data: comments });
+    }
   } catch (e) {
     next(e);
   }

@@ -22,8 +22,7 @@ model Comment {
   owner_id      String?         @db.Uuid
   post_id       Int?
   description   String?
-  likes_count   Int?
-  is_active     Boolean?
+  is_active     Boolean?        @default(true)
   updated_at    DateTime?       @default(now()) @db.Timestamptz(6)
   comment_likes comment_likes[]
   users         User?           @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -105,7 +104,6 @@ model Post {
   owner_id    String       @db.Uuid
   description String?
   photo       String?      @db.VarChar
-  likes_count Int?
   is_active   Boolean?     @default(true)
   updated_at  DateTime?    @default(now()) @db.Timestamptz(6)
   comments    Comment[]
@@ -116,7 +114,7 @@ model Post {
 }
 
 model User {
-  id                                           String                 @id @unique @db.Uuid @default(uuid())
+  id                                           String                 @id @unique @default(uuid()) @db.Uuid
   created_at                                   DateTime?              @default(now()) @db.Timestamptz(6)
   email                                        String?                @unique @db.VarChar
   password                                     String?                @db.VarChar

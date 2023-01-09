@@ -1,5 +1,5 @@
 import express from "express";
-import {getAllComments,getPostComments,  createComment, likeComment, unlikeComment, editComment, deleteComment} from "../controllers/commentController";
+import {getAllComments,getPostComments,  createComment, likeComment, unlikeComment, editComment, deleteComment, getPostPaginatedComments} from "../controllers/commentController";
 import {validateLoggedIn, validateAdmin} from "../middlewares/authHandler";
 
 const router = express.Router();
@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(validateLoggedIn)
 
 router.get("/all", getAllComments);
+router.post("/post/:postId/feed", getPostPaginatedComments) // will change route name
 router.get("/post/:postId", getPostComments)
 router.post("/new/:postId", createComment)
 router.patch("/:commentId", editComment)

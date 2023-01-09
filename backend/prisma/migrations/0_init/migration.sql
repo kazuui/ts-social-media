@@ -15,7 +15,6 @@ CREATE TABLE "comments" (
     "owner_id" UUID,
     "post_id" INTEGER,
     "description" TEXT,
-    "likes_count" INTEGER,
     "is_active" BOOLEAN,
     "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
 
@@ -96,7 +95,6 @@ CREATE TABLE "posts" (
     "owner_id" UUID NOT NULL,
     "description" TEXT,
     "photo" VARCHAR,
-    "likes_count" INTEGER,
     "is_active" BOOLEAN DEFAULT true,
     "updated_at" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
 

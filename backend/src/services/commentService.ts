@@ -1,8 +1,17 @@
 import { Prisma, PrismaClient, Comment, comment_likes } from "@prisma/client";
+import { nextTick } from "process";
 import commentSchema from "../models/commentSchema";
 import ApiError from "../types/apiError";
+import { dbFetchPost } from "./postService";
 
 const prisma = new PrismaClient();
+
+interface paginatedData {
+    initialFeed: boolean;
+    take: number;
+    cursor?: number;
+  }
+  
 
 export const dbFetchAllComments = async () => {
   const allComments = await prisma.comment.findMany({
@@ -129,6 +138,73 @@ export const dbUnlikeComment = async (
   });
   return unlikeComment;
 };
+
+export const dbFetchPostInitialComments = async (paginatedData: paginatedData, postId: number) => {
+    // const post = await dbFetchPost(postId)
+    
+    const initialComments = await prisma.comment.findMany({
+        where: {
+            post_id: postId
+        },
+        take: paginatedData.take,
+        orderBy: {
+            created_at: "desc",
+          },
+          include: {
+            _count: {select: {comment_likes: true}},
+            users: {
+                select: {
+                    id: true,
+                    display_name: true,
+                    profile_photo: true,
+                }
+            }
+          }
+    })
+    if (!initialComments.length) return { comments: [] };
+
+    const cursor = initialComments[initialComments.length - 1].id;
+    return {
+        comments: initialComments,
+        cursor
+    }
+   
+}
+export const dbFetchPostNextComments = async (paginatedData: paginatedData, postId: number) => {
+     const cursorComment = await dbFetchComment(paginatedData.cursor as number)
+     if (!cursorComment) throw ApiError.notFound("Comment not found");
+
+     const nextComments = await prisma.comment.findMany({
+        where: {
+            post_id: postId
+        },
+        take: paginatedData.take,
+        skip: 1,
+        cursor: {
+          id: cursorComment.id,
+        },
+        orderBy: {
+            created_at: "desc",
+          },
+          include: {
+            _count: {select: {comment_likes: true}},
+            users: {
+                select: {
+                    id: true,
+                    display_name: true,
+                    profile_photo: true,
+                }
+            }
+          }
+    })
+    if (!nextComments.length) return { comments: [] };
+
+    const cursor = nextComments[nextComments.length - 1].id;
+    return {
+        comments: nextComments,
+        cursor
+    }
+}
 
 const fetchCommentLikeRecord = async (commentId: number, userId: string) => {
   const commentLikeRecord: comment_likes | null =

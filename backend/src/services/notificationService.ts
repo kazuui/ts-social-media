@@ -50,15 +50,3 @@ export const dbReadNotifications = async (notificationIdArr: number[], userId: s
     })
     return updateNotifications
 }
-
-// const verifyNotificationOwner = async (notificationIdArr: number[], userId: string) => {
-//     const notifications = prisma.notification.findMany({
-//         where: {
-//             user_id: userId,
-//             id: {
-//                 in: notificationIdArr
-//             }
-//         }
-//     })
-//     return notifications;
-// }

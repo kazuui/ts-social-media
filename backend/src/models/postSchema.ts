@@ -9,7 +9,6 @@ const postSchema = yup.object({
     description: yup.string().strict().max(1000),
     photo: yup.string().url(),
     is_active: yup.bool(),
-    likes_count: yup.number().positive().integer()
 })
 
 export default postSchema
