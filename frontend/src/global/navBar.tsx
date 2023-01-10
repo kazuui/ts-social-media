@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+// import { ReactComponent as SVG } from "../../public/assets/ellipsis-solid.svg"
+import { ReactComponent as SVG } from "../assets/ellipsis-solid.svg"
 
 //Components
 
@@ -7,6 +9,7 @@ function NavBar() {
   return (
     <header>
       {/* Might change the brand to image instead - Jia Yi */}
+      <SVG/>
       <div className='navbar'>
         <ul>
           <li className='nav-brand'>
