@@ -136,7 +136,7 @@ export const dbFollowUser = async (userId: string, currentUserId: string) => {
 
 export const dbUnfollowUser = async (userId: string, currentUserId: string) => {
   const followRecord = await fetchFollowRecord(userId, currentUserId);
-  if (!followRecord) throw ApiError.badRequest("Bad request");
+  if (!followRecord) throw ApiError.internalError("No follow record exists");
 
   const unfollowUser = await prisma.follows.delete({
     where: {

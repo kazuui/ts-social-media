@@ -11,7 +11,7 @@ router.route("/signup").post(signup)
 router.use(validateLoggedIn)
 
 router.get("/all", getAllUsers);
-router.get("/allFollows", getAllFollows)
+router.get("/getallfollows", getAllFollows)
 router.get("/follows", getFollows)
 
 router.route("/editprofile").patch(editUserProfile)
@@ -22,6 +22,6 @@ router.post("/:id/follow", followUser);
 router.post("/:id/unfollow", unfollowUser);
 
 //routes below require a user to be an admin
-router.use(validateAdmin)
+// router.use(validateAdmin)
 
 export default router;

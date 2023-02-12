@@ -14,6 +14,6 @@ router.patch("/:conversationId/edit/members", editConversationMembers)
 router.patch("/:conversationId/edit", editConversationDetails)
 
 //routes below require a user to be an admin
-router.use(validateAdmin)
+// router.use(validateAdmin)
 
 export default router;

@@ -17,6 +17,6 @@ router.post("/:commentId/like", likeComment)
 router.post("/:commentId/unlike", unlikeComment)
 
 //routes below require a user to be an admin
-router.use(validateAdmin)
+// router.use(validateAdmin)
 
 export default router;

@@ -48,6 +48,7 @@ export const signup = async (
 ) => {
   const userData = req.body;
   try {
+    
     const user = await dbCreateUser(userData);
     res.json({ data: user });
   } catch (e) {

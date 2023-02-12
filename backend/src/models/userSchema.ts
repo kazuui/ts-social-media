@@ -3,6 +3,7 @@ import * as yup from 'yup';
 
 const userSchema= yup.object({
     id: yup.string().uuid(),
+    password: yup.string().min(1),
     created_at: yup.date(),
     updated_at: yup.date(),
     email: yup.string().email().nullable(),

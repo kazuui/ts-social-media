@@ -12,6 +12,6 @@ router.get("/all", getAllMessages);
 router.post("/new/:conversationId", createMessage)
 
 //routes below require a user to be an admin
-router.use(validateAdmin)
+// router.use(validateAdmin)
 
 export default router;
