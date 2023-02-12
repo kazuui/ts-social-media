@@ -1,7 +1,7 @@
 import React from 'react';
 
 //Components
-
+import { ReactComponent as SVG } from "../../assets/ellipsis-solid.svg"
 
 function Home() {
 
@@ -27,7 +27,7 @@ function Home() {
                 <p className='post-user-location'>8/1/2023 12:40PM (Edited)</p>
               </div>
               <div className='post-edit'>
-                <p>settings</p>
+                <SVG height='20px' />
               </div>
             </div>
             <div className='post-content'>

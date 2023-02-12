@@ -8,6 +8,8 @@ import Unauthorized from './pages/unauthorized/unauthorized';
 import PageNotFound from './pages/404/PageNotFound';
 import Login from './pages/login/login';
 import Home from './pages/home/home';
+import Profile from './pages/profile/profile'
+import Chat from './pages/chat/chat'
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
 
         {/* To protect */}
         <Route path='/home' element={<Home />}></Route>
+        <Route path='/:id' element={<Profile />}></Route>
+        <Route path='/chat' element={<Chat />}></Route>
       </Routes>
     </BrowserRouter>
   );
