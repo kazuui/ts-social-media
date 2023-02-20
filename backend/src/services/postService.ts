@@ -23,9 +23,10 @@ export const dbFetchAllPosts = async () => {
 };
 
 export const dbFetchPost = async (id: number) => {
-  const post = await prisma.post.findUniqueOrThrow({
+  const post = await prisma.post.findFirst({
     where: {
       id,
+      is_active: true,
     },
     include: {
       _count: { select: { post_likes: true } },

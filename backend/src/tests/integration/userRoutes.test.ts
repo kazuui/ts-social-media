@@ -4,48 +4,38 @@ import app from "../../app";
 import db from "../fixtures/db";
 import { getUserIdFromJWT } from "../helpers/helpers";
 
-const { setupDatabase, userOne, userTwo, prisma } = db;
-
+const { setupDatabase, userOne, userThree, clearDatabaseRecords } = db;
 
 beforeAll(async () => {
   console.log("before all tests...");
+  await clearDatabaseRecords();
   await setupDatabase();
   // const prisma = new PrismaClient();
 });
 
-afterAll(async () => {
-  console.log("after all tests...");
-  await prisma.follows.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.$disconnect();
-});
+// afterAll(async () => {
+//   console.log("after all tests...");
+// await clearDatabaseRecords();
+// });
 
-// test("Should signup a new user", async () => {
-//    const response = await request(app).post('/users').send({
-//         userOne
-//     }).expect(201)
+// router.route("/login").post(login)
+// router.route("/signup").post(signup)
 
-//     // Assert that the database was changed correctly
-//     // const user = await prisma.user.findById(response.body.user.id)
-//     // expect(user).not.toBeNull()
+// //routes below require a user to be logged in
+// router.use(validateLoggedIn)
 
-//     //Assertions about the response
-//     // expect(response.body.email).toBe("123@.com")
-//     // expect(response.body).toMatchObject({
-//     //     user: {
-//     //         email: "123@.com"
-//     //     },
-//     //     token: user.token[0].token
-//     // })
-// })
+// router.get("/all", getAllUsers);
+// router.get("/getallfollows", getAllFollows)
+// router.get("/follows", getFollows)
 
-// const isValidUserOne = (res) => {
-//     res.body.user.should.have.property("user");
-// }
+// router.route("/editprofile").patch(editUserProfile)
+// router.route("/logout").post(logout)
 
-let cookie: string;
-let userOneId: string;
-let userTwoId: string;
+// router.get("/:id", getUser);
+// router.post("/:id/follow", followUser);
+// router.post("/:id/unfollow", unfollowUser);
+
+let userThreeId: string;
 const invalidTestUserId = "9a37cdc2-c69f-4b3a-a572-2c3e4cd197b6";
 
 describe("test env", () => {
@@ -63,10 +53,11 @@ describe("Tests for POST '/login'", () => {
 
     expect(response.status).toEqual(200);
 
-    cookie = response.headers["set-cookie"][0];
+    // cookie = response.headers["set-cookie"][0];
+
     //removes start "jwt=" and end ";"
-    const jwtString = cookie.split(" ")[0].replace("jwt=", "").replace(";", "");
-    userOneId = await getUserIdFromJWT(jwtString);
+    // const jwtString = ABC.split(" ")[0].replace("jwt=", "").replace(";", "");
+    // userOneId = await getUserIdFromJWT(jwtString);
   });
   test("Should not login userOne with wrong email", async () => {
     const response = await request(app).post("/users/login").send({
@@ -87,14 +78,13 @@ describe("Tests for POST '/login'", () => {
 describe("Tests for POST '/signup'", () => {
   test("Should create a new user with valid email and password", async () => {
     const response = await request(app).post("/users/signup").send({
-      email: userTwo.email,
-      password: userTwo.password,
+      email: userThree.email,
+      password: userThree.password,
     });
-    userTwoId = response.body.data.id;
+    userThreeId = response.body.data.id;
     expect(response.status).toEqual(200);
-    expect(response.body.data.email).toBe(userTwo.email);
+    expect(response.body.data.email).toBe(userThree.email);
     // expect(response.body.data.password).toBe(null);
-    
   });
   test("Should not create new user with invalid password", async () => {
     const response = await request(app).post("/users/signup").send({
@@ -107,14 +97,14 @@ describe("Tests for POST '/signup'", () => {
   test("Should not create new user with invalid email", async () => {
     const response = await request(app).post("/users/signup").send({
       email: "invalidemail",
-      password: userTwo.password,
+      password: userThree.password,
     });
     expect(response.status).toEqual(406);
   });
   test("Should not create user with duplicate email", async () => {
     const response = await request(app).post("/users/signup").send({
-      email: userTwo.email,
-      password: userTwo.password,
+      email: userThree.email,
+      password: userThree.password,
     });
     expect(response.status).toEqual(400);
   });
@@ -123,13 +113,13 @@ describe("Tests for POST '/signup'", () => {
 describe("Tests for GET '/:id'", () => {
   test("Should find user with valid cookie", async () => {
     const response = await request(app)
-      .get(`/users/${userOneId}`)
-      .set("Cookie", [cookie]);
+      .get(`/users/${userOne.id}`)
+      .set("Cookie", [userOne.cookieString as string]);
     expect(response.status).toEqual(200);
   });
 
   test("Should not find user without valid cookie", async () => {
-    const response = await request(app).get(`/users/${userOneId}`);
+    const response = await request(app).get(`/users/${userOne.id}`);
     expect(response.status).toEqual(400);
   });
 
@@ -148,11 +138,13 @@ describe("Tests for GET '/:id'", () => {
     test("Should edit own profile with valid credentials", async () => {
       const response = await request(app)
         .patch("/users/editprofile")
-        .set("Cookie", [cookie])
+        .set("Cookie", [userOne.cookieString as string])
         .send(editedUserData);
       expect(response.status).toEqual(200);
       expect(response.body.user.email).toBe(editedUserData.email);
-      expect(response.body.user.profile_summary).toBe(editedUserData.profile_summary);
+      expect(response.body.user.profile_summary).toBe(
+        editedUserData.profile_summary
+      );
       expect(response.body.user.display_name).toBe(editedUserData.display_name);
     });
 
@@ -166,7 +158,7 @@ describe("Tests for GET '/:id'", () => {
     test("Should not edit un-permissable fields", async () => {
       const response = await request(app)
         .patch("/users/editprofile")
-        .set("Cookie", [cookie])
+        .set("Cookie", [userOne.cookieString as string])
         .send({
           id: invalidTestUserId,
           role: "admin",
@@ -176,97 +168,96 @@ describe("Tests for GET '/:id'", () => {
     });
   });
 
-  describe("Tests for POST '/:id/follow'",() => {
-    test("Should follow userTwo with valid userId", async () => {
-        const response = await request(app)
-        .post(`/users/${userTwoId}/follow`)
-        .set("Cookie", [cookie])
+  describe("Tests for POST '/:id/follow'", () => {
+    test("Should follow userThree with valid userId", async () => {
+      const response = await request(app)
+        .post(`/users/${userThreeId}/follow`)
+        .set("Cookie", [userOne.cookieString as string])
         .send();
 
-        expect(response.status).toEqual(200);
-    })
+      expect(response.status).toEqual(200);
+    });
 
     test("Should return error without valid cookie", async () => {
-        const response = await request(app)
-        .post(`/users/${userTwoId}/follow`)
+      const response = await request(app)
+        .post(`/users/${userThreeId}/follow`)
         .send();
 
-        expect(response.status).toEqual(400);
-      });
+      expect(response.status).toEqual(400);
+    });
 
-      test("Should not follow a non-existent user", async () => {
-        const response = await request(app)
+    test("Should not follow a non-existent user", async () => {
+      const response = await request(app)
         .post(`/users/${invalidTestUserId}/follow`)
-        .set("Cookie", [cookie])
+        .set("Cookie", [userOne.cookieString as string])
         .send();
 
-        expect(response.status).toEqual(500);
-      });
-  })
+      expect(response.status).toEqual(500);
+    });
+  });
 
-  describe("Tests for GET '/follows'",() => {
-    test("Should return userTwo as a followed user", async () => {
-        const response = await request(app)
+  describe("Tests for GET '/follows'", () => {
+    test("Should return userThree as a followed user", async () => {
+      const response = await request(app)
         .get(`/users/follows`)
-        .set("Cookie", [cookie])
+        .set("Cookie", [userOne.cookieString as string]);
 
-        expect(response.status).toEqual(200);
-        expect(response.body.data.following.length).toBe(1);
-        expect(response.body.data.following[0]).toHaveProperty('followed_user_id', userTwoId);
-        expect(response.body.data.followers.length).toBe(0);
-    })
+      expect(response.status).toEqual(200);
+      expect(response.body.data.following.length).toBe(1);
+      expect(response.body.data.following[0]).toHaveProperty(
+        "followed_user_id",
+        userThreeId
+      );
+      expect(response.body.data.followers.length).toBe(0);
+    });
 
     test("Should return error without valid cookie", async () => {
-        const response = await request(app)
-        .get(`/users/follows`)
+      const response = await request(app).get(`/users/follows`);
 
-        expect(response.status).toEqual(400);
-      });
-  })
+      expect(response.status).toEqual(400);
+    });
+  });
 
-  describe("Tests for POST '/:id/unfollow'",() => {
+  describe("Tests for POST '/:id/unfollow'", () => {
     test("Should return error without valid cookie", async () => {
-        const response = await request(app)
-        .post(`/users/${userTwoId}/unfollow`)
+      const response = await request(app)
+        .post(`/users/${userThreeId}/unfollow`)
         .send();
 
-        expect(response.status).toEqual(400);
-      });
+      expect(response.status).toEqual(400);
+    });
 
-      test("Should not unfollow a non-existent user", async () => {
-        const response = await request(app)
+    test("Should not unfollow a non-existent user", async () => {
+      const response = await request(app)
         .post(`/users/${invalidTestUserId}/unfollow`)
-        .set("Cookie", [cookie])
+        .set("Cookie", [userOne.cookieString as string])
         .send();
 
-        expect(response.status).toEqual(500);
-      });
+      expect(response.status).toEqual(500);
+    });
 
-      test("Should unfollow userTwo with valid userId", async () => {
-        const response = await request(app)
-        .post(`/users/${userTwoId}/unfollow`)
-        .set("Cookie", [cookie])
+    test("Should unfollow userThree with valid userId", async () => {
+      const response = await request(app)
+        .post(`/users/${userThreeId}/unfollow`)
+        .set("Cookie", [userOne.cookieString as string])
         .send();
 
-        expect(response.status).toEqual(200);
-    })
+      expect(response.status).toEqual(200);
+    });
 
     test("UserOne's follows should not contain any users", async () => {
-        const response = await request(app)
+      const response = await request(app)
         .get(`/users/follows`)
-        .set("Cookie", [cookie])
+        .set("Cookie", [userOne.cookieString as string]);
 
-        expect(response.status).toEqual(200);
-        expect(response.body.data.following.length).toBe(0);
-        expect(response.body.data.followers.length).toBe(0);
-    })
-  })
-  
-
+      expect(response.status).toEqual(200);
+      expect(response.body.data.following.length).toBe(0);
+      expect(response.body.data.followers.length).toBe(0);
+    });
+  });
 });
 
+// test("should upload image", async () => {
 
-test("should upload image", async () => {
-    
-  //toBe uses strict equality, toEqual uses an algorithm to compare instead,, so it can be used on objects
-});
+//   //toBe uses strict equality, toEqual uses an algorithm to compare instead,, so it can be used on objects
+// });
