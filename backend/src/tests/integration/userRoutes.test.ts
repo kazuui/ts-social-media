@@ -1,39 +1,14 @@
-import { TextDecoderStream } from "stream/web";
 import request from "supertest";
 import app from "../../app";
 import db from "../fixtures/db";
-import { getUserIdFromJWT } from "../helpers/helpers";
 
 const { setupDatabase, userOne, userThree, clearDatabaseRecords } = db;
 
 beforeAll(async () => {
-  console.log("before all tests...");
+  console.log("Running UserRoutes tests...");
   await clearDatabaseRecords();
   await setupDatabase();
-  // const prisma = new PrismaClient();
 });
-
-// afterAll(async () => {
-//   console.log("after all tests...");
-// await clearDatabaseRecords();
-// });
-
-// router.route("/login").post(login)
-// router.route("/signup").post(signup)
-
-// //routes below require a user to be logged in
-// router.use(validateLoggedIn)
-
-// router.get("/all", getAllUsers);
-// router.get("/getallfollows", getAllFollows)
-// router.get("/follows", getFollows)
-
-// router.route("/editprofile").patch(editUserProfile)
-// router.route("/logout").post(logout)
-
-// router.get("/:id", getUser);
-// router.post("/:id/follow", followUser);
-// router.post("/:id/unfollow", unfollowUser);
 
 let userThreeId: string;
 const invalidTestUserId = "9a37cdc2-c69f-4b3a-a572-2c3e4cd197b6";
@@ -44,6 +19,7 @@ describe("test env", () => {
   });
 });
 
+// router.route("/login").post(login)
 describe("Tests for POST '/login'", () => {
   test("Should login userOne with valid credentials", async () => {
     const response = await request(app).post("/users/login").send({
@@ -75,6 +51,7 @@ describe("Tests for POST '/login'", () => {
   });
 });
 
+// router.route("/signup").post(signup)
 describe("Tests for POST '/signup'", () => {
   test("Should create a new user with valid email and password", async () => {
     const response = await request(app).post("/users/signup").send({
@@ -84,8 +61,8 @@ describe("Tests for POST '/signup'", () => {
     userThreeId = response.body.data.id;
     expect(response.status).toEqual(200);
     expect(response.body.data.email).toBe(userThree.email);
-    // expect(response.body.data.password).toBe(null);
   });
+
   test("Should not create new user with invalid password", async () => {
     const response = await request(app).post("/users/signup").send({
       email: "validemail@email.com",
@@ -110,6 +87,7 @@ describe("Tests for POST '/signup'", () => {
   });
 });
 
+// router.get("/:id", getUser);
 describe("Tests for GET '/:id'", () => {
   test("Should find user with valid cookie", async () => {
     const response = await request(app)
@@ -128,6 +106,7 @@ describe("Tests for GET '/:id'", () => {
     expect(response.status).toEqual(400);
   });
 
+  // router.route("/editprofile").patch(editUserProfile)
   describe("Tests for PATCH '/editprofile'", () => {
     let editedUserData = {
       email: "123@test.com",
@@ -168,6 +147,7 @@ describe("Tests for GET '/:id'", () => {
     });
   });
 
+  // router.post("/:id/follow", followUser);
   describe("Tests for POST '/:id/follow'", () => {
     test("Should follow userThree with valid userId", async () => {
       const response = await request(app)
@@ -196,6 +176,7 @@ describe("Tests for GET '/:id'", () => {
     });
   });
 
+  // router.get("/follows", getFollows)
   describe("Tests for GET '/follows'", () => {
     test("Should return userThree as a followed user", async () => {
       const response = await request(app)
@@ -218,6 +199,7 @@ describe("Tests for GET '/:id'", () => {
     });
   });
 
+  // router.post("/:id/unfollow", unfollowUser);
   describe("Tests for POST '/:id/unfollow'", () => {
     test("Should return error without valid cookie", async () => {
       const response = await request(app)

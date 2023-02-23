@@ -1,26 +1,17 @@
-import { response } from "express";
 import request from "supertest";
 import app from "../../app";
 import db from "../fixtures/db";
-import { getUserIdFromJWT } from "../helpers/helpers";
 
 const { setupDatabase, userOne, userTwo, postOne, clearDatabaseRecords } = db;
 
 beforeAll(async () => {
-  console.log("before all tests...");
+  console.log("Running PostRoutes tests...");
   await clearDatabaseRecords();
   await setupDatabase();
-  // const prisma = new PrismaClient();
 });
-
-// afterAll(async () => {
-//   console.log("after all tests...");
-//   await clearDatabaseRecords();
-// });
 
 const postTwoDescription = "Post 2 description";
 const editedPostTwoDescription = "New Post 2 description";
-// const userOneCookie = userOne.cookieString as string;
 let postTwoId: number;
 
 // router.post("/new", createPost)
@@ -125,47 +116,99 @@ describe("Tests for PATCH '/:postId'", () => {
   });
 });
 
-
 // router.delete("/:postId", deletePost)
 describe("Tests for DELETE '/:postId'", () => {
-    test("Should not delete post without valid credentials", async () => {
-        const response = await request(app)
-          .delete(`/posts/${postOne.id}`)
-        //   .set("Cookie", [userOne.cookieString as string]);
-    
-        expect(response.status).toEqual(400);
-      });
+  test("Should not delete post without valid credentials", async () => {
+    const response = await request(app).delete(`/posts/${postOne.id}`);
+    //   .set("Cookie", [userOne.cookieString as string]);
 
-      test("Should not delete post that does not belong to user", async () => {
-        const response = await request(app)
-          .delete(`/posts/${postOne.id}`)
-          .set("Cookie", [userTwo.cookieString as string]);
-    
-        expect(response.status).toEqual(400);
-      });
+    expect(response.status).toEqual(400);
+  });
 
-      test("Should delete post with valid credentials", async () => {
-        const response = await request(app)
-          .delete(`/posts/${postOne.id}`)
-          .set("Cookie", [userOne.cookieString as string]);
-    
-        expect(response.status).toEqual(200);
+  test("Should not delete post that does not belong to user", async () => {
+    const response = await request(app)
+      .delete(`/posts/${postOne.id}`)
+      .set("Cookie", [userTwo.cookieString as string]);
 
-        const postOneResponse = await request(app).get(`/posts/${postOne.id}`).set("Cookie", [userOne.cookieString as string]);;
-        expect(postOneResponse.status).toEqual(404);
-      });
-    
+    expect(response.status).toEqual(400);
+  });
 
-})
+  test("Should delete post with valid credentials", async () => {
+    const response = await request(app)
+      .delete(`/posts/${postOne.id}`)
+      .set("Cookie", [userOne.cookieString as string]);
 
+    expect(response.status).toEqual(200);
 
-// // router.get("/all", getAllPosts);
-// // router.post("/feed", getPostFeed)
-// // router.post("/new", createPost)
-
-// // router.get("/:postId", getPost)
-// // router.patch("/:postId", editPost)
-// // router.delete("/:postId", deletePost)
+    const postOneResponse = await request(app)
+      .get(`/posts/${postOne.id}`)
+      .set("Cookie", [userOne.cookieString as string]);
+    expect(postOneResponse.status).toEqual(404);
+  });
+});
 
 // // router.post("/:postId/like", likePost)
+describe("Tests for POST '/:postId/like'", () => {
+  test("Should not like post without valid credentials", async () => {
+    const response = await request(app).post(`/posts/${postOne.id}/like`);
+    //   .set("Cookie", [userOne.cookieString as string]);
+
+    expect(response.status).toEqual(400);
+  });
+
+  test("Should like post with valid credentials", async () => {
+    const response = await request(app)
+      .post(`/posts/${postTwoId}/like`)
+      .set("Cookie", [userOne.cookieString as string]);
+
+    expect(response.status).toEqual(200);
+
+    const postOneResponse = await request(app)
+      .get(`/posts/${postTwoId}`)
+      .set("Cookie", [userOne.cookieString as string]);
+
+    expect(postOneResponse.body.data.id).toBe(postTwoId);
+    expect(postOneResponse.body.data._count.post_likes).toBe(1);
+  });
+
+  test("Should return error if post does not exist", async () => {
+    const response = await request(app)
+      .post(`/posts/999/like`)
+      .set("Cookie", [userOne.cookieString as string]);
+
+    expect(response.status).toEqual(500);
+  });
+});
+
 // // router.post("/:postId/unlike", unlikePost)
+describe("Tests for POST '/:postId/unlike'", () => {
+  test("Should not unlike post without valid credentials", async () => {
+    const response = await request(app).post(`/posts/${postOne.id}/unlike`);
+    //   .set("Cookie", [userOne.cookieString as string]);
+
+    expect(response.status).toEqual(400);
+  });
+
+  test("Should unlike post with valid credentials", async () => {
+    const response = await request(app)
+      .post(`/posts/${postTwoId}/unlike`)
+      .set("Cookie", [userOne.cookieString as string]);
+
+    expect(response.status).toEqual(200);
+
+    const postOneResponse = await request(app)
+      .get(`/posts/${postTwoId}`)
+      .set("Cookie", [userOne.cookieString as string]);
+
+    expect(postOneResponse.body.data.id).toBe(postTwoId);
+    expect(postOneResponse.body.data._count.post_likes).toBe(0);
+  });
+
+  test("Should return error if post does not exist", async () => {
+    const response = await request(app)
+      .post(`/posts/999/unlike`)
+      .set("Cookie", [userOne.cookieString as string]);
+
+    expect(response.status).toEqual(400);
+  });
+});

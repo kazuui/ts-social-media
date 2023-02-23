@@ -108,7 +108,7 @@ export const dbEditPost = async (
     data: {
       description: postData.description,
       photo: postData.photo,
-      updated_at: new Date()
+      updated_at: new Date(),
     },
   });
   return updatedPost;
@@ -125,7 +125,7 @@ export const dbDisablePost = async (postId: number, userId: string) => {
     },
     data: {
       is_active: false,
-      updated_at: new Date()
+      updated_at: new Date(),
     },
   });
   return updatedPost;
@@ -179,15 +179,15 @@ export const dbFetchInitialPostsFeed = async (
       created_at: "desc",
     },
     include: {
-        _count: { select: { post_likes: true } },
-        users: {
-          select: {
-            id: true,
-            display_name: true,
-            profile_photo: true,
-          },
+      _count: { select: { post_likes: true } },
+      users: {
+        select: {
+          id: true,
+          display_name: true,
+          profile_photo: true,
         },
-      }
+      },
+    },
   });
   if (!initialPostsFeed.length) return { posts: [] };
 
@@ -228,15 +228,15 @@ export const dbFetchNextPostsFeed = async (
       created_at: "desc",
     },
     include: {
-        _count: { select: { post_likes: true } },
-        users: {
-          select: {
-            id: true,
-            display_name: true,
-            profile_photo: true,
-          },
+      _count: { select: { post_likes: true } },
+      users: {
+        select: {
+          id: true,
+          display_name: true,
+          profile_photo: true,
         },
-      }
+      },
+    },
   });
   if (!nextPostsFeed.length) return { posts: [] };
 
