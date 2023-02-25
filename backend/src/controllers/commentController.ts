@@ -9,6 +9,7 @@ import {
   dbDeleteComment,
   dbFetchPostInitialComments,
   dbFetchPostNextComments,
+  dbFetchComment
 } from "../services/commentService";
 import ApiError from "../types/apiError";
 import commentSchema from "../models/commentSchema";
@@ -59,6 +60,22 @@ export const createComment = async (
     await validateRouteParams({ post_id: postId });
     const createdComment = await dbCreateComment(commentData, postId, userId);
     res.json({ data: createdComment });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const getComment = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const commentId = +req.params.commentId;
+
+  try {
+    await validateRouteParams({ id: commentId });
+    const comment = await dbFetchComment(commentId);
+    res.json({ data: comment });
   } catch (e) {
     next(e);
   }

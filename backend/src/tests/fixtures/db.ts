@@ -32,6 +32,7 @@ interface Comment {
   description: string;
   owner_id?: string;
   post_id?: number;
+
 }
 
 const userOne: User = {
@@ -125,6 +126,7 @@ const setupDatabase = async () => {
 
 const clearDatabaseRecords = async () => {
   await prisma.follows.deleteMany();
+  await prisma.comment_likes.deleteMany();
   await prisma.comment.deleteMany();
   await prisma.post.deleteMany();
   await prisma.user.deleteMany();

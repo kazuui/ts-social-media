@@ -34,6 +34,7 @@ export const dbFetchPostComments = async (id: number) => {
       posts: {
         id,
       },
+      is_active: true
     },
     include: {
       _count: { select: { comment_likes: true } },
@@ -86,7 +87,7 @@ export const dbEditComment = async (
 
 export const dbDeleteComment = async (commentId: number, userId: string) => {
   const comment = await dbFetchComment(commentId);
-  if (!comment || comment.owner_id !== userId)
+  if (comment.owner_id !== userId)
     throw ApiError.badRequest("Invalid request");
 
   const updatedComment = await prisma.comment.update({
@@ -103,6 +104,7 @@ export const dbDeleteComment = async (commentId: number, userId: string) => {
 
 export const dbLikeComment = async (commentId: number, userId: string) => {
   const commentLikeRecord = await fetchCommentLikeRecord(commentId, userId);
+
   if (commentLikeRecord) return;
 
   const likedComment = await prisma.comment_likes.create({
@@ -135,7 +137,6 @@ export const dbFetchPostInitialComments = async (
   postId: number
 ) => {
   // const post = await dbFetchPost(postId)
-
   const initialComments = await prisma.comment.findMany({
     where: {
       post_id: postId,
@@ -204,7 +205,7 @@ export const dbFetchPostNextComments = async (
 
 const fetchCommentLikeRecord = async (commentId: number, userId: string) => {
   const commentLikeRecord: comment_likes | null =
-    await prisma.comment_likes.findFirstOrThrow({
+    await prisma.comment_likes.findFirst({
       where: {
         user_id: userId,
         comment_id: commentId,
@@ -214,11 +215,15 @@ const fetchCommentLikeRecord = async (commentId: number, userId: string) => {
   return commentLikeRecord;
 };
 
-const dbFetchComment = async (id: number) => {
+export const dbFetchComment = async (id: number) => {
   const comment = await prisma.comment.findFirst({
     where: {
       id,
+      is_active: true
     },
+    include: {
+      _count: { select: { comment_likes: true } },
+    }
   });
   if(!comment) throw ApiError.notFound("Comment not found");
   return comment;
