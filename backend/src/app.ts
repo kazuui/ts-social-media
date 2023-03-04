@@ -8,7 +8,6 @@ import rateLimit from 'express-rate-limit'
 import userRouter from "./routes/userRoutes";
 import postRouter from "./routes/postRoutes";
 import commentRouter from "./routes/commentRoutes";
-import messageRouter from "./routes/messageRoutes";
 import conversationRouter from "./routes/conversationRoutes";
 import notificationRouter from "./routes/notificationRoutes"
 
@@ -35,7 +34,6 @@ app.use(limiter);
 app.use("/users", userRouter);
 app.use("/posts", postRouter)
 app.use("/comments", commentRouter)
-app.use("/messages", messageRouter)
 app.use("/conversations", conversationRouter)
 app.use("/notifications", notificationRouter)
 

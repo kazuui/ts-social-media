@@ -38,7 +38,19 @@ export const dbFetchUserConversations = async (userId: string) => {
   return conversations;
 };
 
-export const dbFetchConversationMessages = async (conversationId: number) => {
+//to paginate it
+export const dbFetchConversationMessages = async (
+  conversationId: number,
+  userId: string
+) => {
+  const conversation = await dbFetchConversation(conversationId);
+
+  const foundUserId = conversation.conversation_members.find(
+    (conv) => conv.user_id === userId
+  );
+  if (!foundUserId)
+    throw ApiError.badRequest("Conversation does not belong to user");
+
   const conversationMessages = await prisma.conversation.findUnique({
     where: {
       id: conversationId,
@@ -91,17 +103,17 @@ export const dbEditConversationDetails = async (
   conversationId: number,
   conversationDetails: string
 ) => {
-    await dbFetchConversation(conversationId)
-    const conversation = await prisma.conversation.update({
-        where: {
-            id: conversationId
-        },
-        data: {
-            name: conversationDetails,
-            updated_at: new Date()
-        }
-    })
-    return conversation;
+  await dbFetchConversation(conversationId);
+  const conversation = await prisma.conversation.update({
+    where: {
+      id: conversationId,
+    },
+    data: {
+      name: conversationDetails,
+      updated_at: new Date(),
+    },
+  });
+  return conversation;
 };
 
 export const dbEditConversationMembers = async (
@@ -111,7 +123,7 @@ export const dbEditConversationMembers = async (
     remove: string[];
   }
 ) => {
-    //Find members' id for conversations to remove
+  //Find members' id for conversations to remove
   const conversationMembers = await prisma.conversation_members.findMany({
     where: {
       conversation_id: conversationId,
@@ -139,20 +151,55 @@ export const dbEditConversationMembers = async (
         create: addMembers,
         delete: removeMembers,
       },
-      updated_at: new Date()
+      updated_at: new Date(),
     },
   });
 };
 
-const dbFetchConversation = async (conversationId: number) => {
-  const conversation = await prisma.conversation.findUnique({
+export const dbFetchConversation = async (conversationId: number) => {
+  const conversation = await prisma.conversation.findFirst({
     where: {
       id: conversationId,
     },
     include: {
-        conversation_members: true
-    }
+      conversation_members: true,
+    },
   });
-  if(!conversation) throw ApiError.badRequest("Invalid conversation id")
+  if (!conversation) throw ApiError.badRequest("Invalid conversation id");
   return conversation;
+};
+
+export const isBelongToConversation = async (
+  conversation_id: number,
+  userId: string
+) => {
+  const conversation = await dbFetchConversation(conversation_id);
+  if (!conversation) throw ApiError.badRequest("Invalid conversation id");
+   
+  
+  conversation.conversation_members.find(
+    (convo) => convo.user_id === userId
+  );
+};
+
+export const dbFetchAllMessages = async () => {
+  const allMessages = await prisma.message.findMany();
+  return allMessages;
+};
+
+export const dbCreateMessage = async (
+  messageData: Prisma.MessageCreateInput,
+  conversationId: number,
+  userId: string
+) => {
+  if (!isBelongToConversation(conversationId, userId))
+    throw ApiError.badRequest("User does not belong to this conversation");
+
+  messageData.users = { connect: { id: userId } };
+  messageData.conversations = { connect: { id: conversationId } };
+  const createdMessage = await prisma.message.create({ data: messageData });
+
+  if (!createdMessage) throw ApiError.badRequest("Bad request");
+
+  return createdMessage;
 };

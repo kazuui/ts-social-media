@@ -2,7 +2,7 @@ import request from "supertest";
 import app from "../../app";
 import db from "../fixtures/db";
 
-const { setupDatabase, userOne, userThree, clearDatabaseRecords } = db;
+const { setupDatabase, userOne, userThree, userFour,clearDatabaseRecords } = db;
 
 beforeAll(async () => {
   console.log("Running UserRoutes tests...");
@@ -10,7 +10,7 @@ beforeAll(async () => {
   await setupDatabase();
 });
 
-let userThreeId: string;
+let userFourId: string;
 const invalidTestUserId = "9a37cdc2-c69f-4b3a-a572-2c3e4cd197b6";
 
 describe("test env", () => {
@@ -55,12 +55,12 @@ describe("Tests for POST '/login'", () => {
 describe("Tests for POST '/signup'", () => {
   test("Should create a new user with valid email and password", async () => {
     const response = await request(app).post("/users/signup").send({
-      email: userThree.email,
-      password: userThree.password,
+      email: userFour.email,
+      password: userFour.password,
     });
-    userThreeId = response.body.data.id;
+    userFourId = response.body.data.id;
     expect(response.status).toEqual(200);
-    expect(response.body.data.email).toBe(userThree.email);
+    expect(response.body.data.email).toBe(userFour.email);
   });
 
   test("Should not create new user with invalid password", async () => {
@@ -74,14 +74,14 @@ describe("Tests for POST '/signup'", () => {
   test("Should not create new user with invalid email", async () => {
     const response = await request(app).post("/users/signup").send({
       email: "invalidemail",
-      password: userThree.password,
+      password: userFour.password,
     });
     expect(response.status).toEqual(406);
   });
   test("Should not create user with duplicate email", async () => {
     const response = await request(app).post("/users/signup").send({
-      email: userThree.email,
-      password: userThree.password,
+      email: userFour.email,
+      password: userFour.password,
     });
     expect(response.status).toEqual(400);
   });
@@ -149,9 +149,9 @@ describe("Tests for GET '/:id'", () => {
 
   // router.post("/:id/follow", followUser);
   describe("Tests for POST '/:id/follow'", () => {
-    test("Should follow userThree with valid userId", async () => {
+    test("Should follow userFour with valid userId", async () => {
       const response = await request(app)
-        .post(`/users/${userThreeId}/follow`)
+        .post(`/users/${userFourId}/follow`)
         .set("Cookie", [userOne.cookieString as string])
         .send();
 
@@ -160,7 +160,7 @@ describe("Tests for GET '/:id'", () => {
 
     test("Should return error without valid cookie", async () => {
       const response = await request(app)
-        .post(`/users/${userThreeId}/follow`)
+        .post(`/users/${userFourId}/follow`)
         .send();
 
       expect(response.status).toEqual(400);
@@ -178,7 +178,7 @@ describe("Tests for GET '/:id'", () => {
 
   // router.get("/follows", getFollows)
   describe("Tests for GET '/follows'", () => {
-    test("Should return userThree as a followed user", async () => {
+    test("Should return userFour as a followed user", async () => {
       const response = await request(app)
         .get(`/users/follows`)
         .set("Cookie", [userOne.cookieString as string]);
@@ -187,7 +187,7 @@ describe("Tests for GET '/:id'", () => {
       expect(response.body.data.following.length).toBe(1);
       expect(response.body.data.following[0]).toHaveProperty(
         "followed_user_id",
-        userThreeId
+        userFourId
       );
       expect(response.body.data.followers.length).toBe(0);
     });
@@ -203,7 +203,7 @@ describe("Tests for GET '/:id'", () => {
   describe("Tests for POST '/:id/unfollow'", () => {
     test("Should return error without valid cookie", async () => {
       const response = await request(app)
-        .post(`/users/${userThreeId}/unfollow`)
+        .post(`/users/${userFourId}/unfollow`)
         .send();
 
       expect(response.status).toEqual(400);
@@ -218,9 +218,9 @@ describe("Tests for GET '/:id'", () => {
       expect(response.status).toEqual(500);
     });
 
-    test("Should unfollow userThree with valid userId", async () => {
+    test("Should unfollow userFour with valid userId", async () => {
       const response = await request(app)
-        .post(`/users/${userThreeId}/unfollow`)
+        .post(`/users/${userFourId}/unfollow`)
         .set("Cookie", [userOne.cookieString as string])
         .send();
 
