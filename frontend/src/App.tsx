@@ -2,6 +2,9 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import './App.css';
 
+//Protected Routes
+import PrivateRoute from "./private-routes/privateRoute"
+
 //Components
 import NavBar from './global/navBar';
 import Unauthorized from './pages/unauthorized/unauthorized';
