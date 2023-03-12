@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import './App.css';
 
 //Protected Routes
-import PrivateRoute from "./private-routes/privateRoute"
+//import PrivateRoute from "./private-routes/privateRouteGuard"
 
 //Components
 import NavBar from './global/navBar';
